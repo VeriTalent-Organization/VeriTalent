@@ -3,15 +3,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  --color-brand-primary: #28809A;
-  --color-gray-shade: #D9D9D9; /* Removed alpha; use /opacity modifiers instead */
-  --color-green-shade: #DCFCE7;
-  --color-ink-blue: #2563EB;
-  --color-alert-red: #C22929;
-  --color-shade-green: #0D9488;
-  --color-sky-blue: #E6EDFF;
-  --color-weird-orange: #EFBF04;
+@theme{
+  --color-primary: #28809A;
+  --color-grey-shade: #D9D9D980;
+  --color-green-shade:#DCFCE7;
+  --color-ink-blue:#2563EB;
+  --color-alert-red:#C22929;
+  --color-shade-green:#0D9488;
+  --color-sky-blue:#E6EDFF;
+  --color-weird-orange:#EFBF04
 }
 
 @theme inline {

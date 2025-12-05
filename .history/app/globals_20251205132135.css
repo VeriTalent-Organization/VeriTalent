@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-brand-primary: #28809A;
+  --color-primary: #28809A;
   --color-gray-shade: #D9D9D9; /* Removed alpha; use /opacity modifiers instead */
   --color-green-shade: #DCFCE7;
   --color-ink-blue: #2563EB;

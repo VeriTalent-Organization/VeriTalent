@@ -7,14 +7,12 @@ import MaxWidthContainer from '@/components/reuseables/max_width_container'
 import RolePickerStep from '@/components/layout/onboarding/role_picker'
 
 import Icons from '@/lib/configs/icons.config'
-import RegistrationFormStep from '@/components/layout/onboarding/registration_form_step'
-import EmployerProfileStep from '@/components/layout/onboarding/employer_from_step'
+import RegistrationFormStep from '@/lib/stores/registration_form_step'
 
 const Home = () => {
   const steps = [
     RolePickerStep, 
-   RegistrationFormStep,
-   EmployerProfileStep
+   RegistrationFormStep
   ]
 
   const [currentStep, setCurrentStep] = useState(0)
@@ -59,7 +57,7 @@ const Home = () => {
       </div>
 
       {/* NEXT & BACK CONTROLS */}
-      <div className="flex justify-between mt-10 mb-6">
+      <div className="flex justify-between mt-10 pb-6">
         <button
           onClick={goBack}
           disabled={currentStep === 0}

@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: {
@@ -32,14 +41,6 @@ export const metadata: Metadata = {
   },
 };
 
-const plus_jarkata_sans = Plus_Jakarta_Sans(
-  {
-    weight:['200',"300","400","500","600","700","800"],
-    style: "normal",
-    subsets:["latin"]
-  }
-)
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,7 +60,7 @@ export default function RootLayout({
         <link rel="canonical" href="https://www.veritalent.com" />
       </head>
       <body
-        className={`${plus_jarkata_sans.className} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning // Optional: Suppresses warnings from font loading
       >
         {/* Optional accessibility enhancement: Skip link (improves keyboard navigation & indirect SEO) */}

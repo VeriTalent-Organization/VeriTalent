@@ -9,12 +9,14 @@ import RolePickerStep from '@/components/layout/onboarding/role_picker'
 import Icons from '@/lib/configs/icons.config'
 import RegistrationFormStep from '@/components/layout/onboarding/registration_form_step'
 import EmployerProfileStep from '@/components/layout/onboarding/employer_from_step'
+import LoginPage from '@/components/layout/onboarding/login'
 
 const Home = () => {
   const steps = [
     RolePickerStep, 
    RegistrationFormStep,
-   EmployerProfileStep
+   EmployerProfileStep,
+   LoginPage
   ]
 
   const [currentStep, setCurrentStep] = useState(0)

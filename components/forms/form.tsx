@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -204,9 +205,14 @@ export default function FormComponent({
                             type="button"
                             onClick={() => togglePasswordVisibility(field.name)}
                             variant="ghost"
-                            size="sm"
+                            size="icon-xs"
+                            className="h-9 w-9"
                           >
-                            {showPassword[field.name] ? "Hide" : "Show"}
+                            {showPassword[field.name] ? (
+                              <EyeOff className="h-5 w-5 text-gray-400" />
+                            ) : (
+                              <Eye className="h-5 w-5 text-gray-400" />
+                            )}
                           </InputGroupButton>
                         </InputGroupAddon>
                       )}
@@ -255,9 +261,20 @@ export default function FormComponent({
         })}
 
         {formType === "login" && (
-          <div className="text-right">
-            <Link href="#" className="text-sm text-blue-600 hover:underline">
-              Forgotten password?
+          <div className="flex items-center justify-between -mt-3">
+            <label className="flex items-center cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="w-4 h-4 text-cyan-600 bg-gray-100 border-gray-300 rounded focus:ring-cyan-500 focus:ring-2"
+              />
+              <span className="ml-3 text-sm font-medium text-gray-700">Remember me</span>
+            </label>
+
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-cyan-600 hover:text-cyan-700"
+            >
+              Forgot Password?
             </Link>
           </div>
         )}

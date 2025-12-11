@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Plus, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// import { Search, Plus, User } from "lucide-react";
+// import { Input } from "@/components/ui/input";
+// import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import Link from "next/link";
+// import Link from "next/link";
 
 // KEEP your full main content here — unchanged except sidebar removed
 export default function DashboardPage() {
@@ -87,18 +87,18 @@ export default function DashboardPage() {
             Post Job/CV Upload/VeriTalent ID Upload
             </h2>
             <div className="grid grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                 <h3 className="font-semibold text-gray-900 mb-1">Post a Job</h3>
                 <p className="text-sm text-cyan-600 font-medium">Automated Screening</p>
                 </CardContent>
             </Card>
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                 <h3 className="font-semibold text-gray-900">Bulk CV Upload</h3>
                 </CardContent>
             </Card>
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
                 <CardContent className="pt-6">
                 <h3 className="font-semibold text-gray-900">VeriTalent ID Upload</h3>
                 </CardContent>

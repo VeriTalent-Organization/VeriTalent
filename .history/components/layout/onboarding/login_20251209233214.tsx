@@ -90,8 +90,7 @@ export default function LoginPage() {
             </button>
 
             <button className="w-full flex items-center justify-center gap-3 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium text-gray-700">
-              <Image src={Icons.microSoft} alt="microsoft" height={30} width={30}/>
-             
+              <svg className="w-5 h-5" viewBox="0 0 24 24"><rect width="6" height="6" fill="#f25022"/><rect x="9" width="6" height="6" fill="#7fba00"/><rect y="9" width="6" height="6" fill="#00a4ef"/><rect x="9" y="9" width="6" height="6" fill="#ffb900"/></svg>
               Login with Microsoft SSO
             </button>
           </div>

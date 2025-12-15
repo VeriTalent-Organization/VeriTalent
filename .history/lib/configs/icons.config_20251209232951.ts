@@ -24,7 +24,7 @@ export class Icons {
 
   // Dashboard & Layout Icons
   static mageDashboard = '/mage_dashboard.svg';
-  static microSoft = '/logos_microsoft-icon.svg';
+  static logosMicrosoftIcon = '/logos_microsoft-icon.svg';
 
   // Upload & Cloud Icons
   static meteorIconsUploadCloud = '/meteor-icons_upload-cloud.svg';

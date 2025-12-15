@@ -8,8 +8,8 @@ export class Icons {
   static ggFileDocument = '/gg_file-document.svg';
 
   // Social Media Icons
-  static google = '/flat-color-icons_google.svg';
-  static linkedin = '/skill-icons_linkedin.svg';
+  static flatColorIconsGoogle = '/flat-color-icons_google.svg';
+  static skillIconsLinkedin = '/skill-icons_linkedin.svg';
 
   // UI Icons
   static globe = '/globe.svg';
@@ -24,7 +24,7 @@ export class Icons {
 
   // Dashboard & Layout Icons
   static mageDashboard = '/mage_dashboard.svg';
-  static microSoft = '/logos_microsoft-icon.svg';
+  static logosMicrosoftIcon = '/logos_microsoft-icon.svg';
 
   // Upload & Cloud Icons
   static meteorIconsUploadCloud = '/meteor-icons_upload-cloud.svg';

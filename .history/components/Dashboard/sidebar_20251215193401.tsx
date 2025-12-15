@@ -17,8 +17,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCreateUserStore } from "@/lib/stores/form_submission_store";
 import { userTypes } from "@/types/user_type";
-import Image from "next/image";
-import Icons from "@/lib/configs/icons.config";
 
 // Define user role type
 type UserRole =
@@ -107,7 +105,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo */}
         <div className="p-6 flex justify-between">
           <div className="flex items-center gap-2">
-            <Image src={Icons.veritalentLogo} alt="veritalent logo" height={100} width={100}/>
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+              <path d="M20 5L5 15L20 25L35 15L20 5Z" fill="#0D7490" />
+              <path d="M5 25L20 35L35 25" stroke="#0D7490" strokeWidth="2" />
+            </svg>
+            <span className="text-xl font-bold text-gray-800">VeriTalent</span>
           </div>
           <button
             onClick={onClose}

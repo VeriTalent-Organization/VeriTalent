@@ -107,7 +107,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo */}
         <div className="p-6 flex justify-between">
           <div className="flex items-center gap-2">
-            <Image src={Icons.veritalentLogo} alt="veritalent logo" height={100} width={100}/>
+            <Image src={Icons.veritalentLogo} alt="veritalent logo" height={100} width={200}/>
           </div>
           <button
             onClick={onClose}

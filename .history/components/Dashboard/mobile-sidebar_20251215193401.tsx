@@ -21,13 +21,6 @@ const mockUser = {
   email: "mike@example.com"
 };
 
-type menuItemsType = {
-  icon: React.ComponentType<any>;
-  label: string;
-  href: string;
-
-}
-
 export default function Sidebar() {
   const [activeRoute, setActiveRoute] = useState("/dashboard");
   const [isOpen, setIsOpen] = useState(false);
@@ -45,13 +38,13 @@ export default function Sidebar() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const roleLabels:Record<string, string> = {
+  const roleLabels = {
     TALENT: "Talent",
     INDEPENT_RECRUITER: "Independent Recruiter",
     ORGANISATION: "Company Administrator",
   };
 
-  const menuItemsByRole: Record<string, menuItemsType[]> = {
+  const menuItemsByRole = {
     TALENT: [
       { icon: CreditCard, label: "Veritalent AI Card", href: "/dashboard/ai-card" },
       { icon: FileText, label: "Career Repository", href: "/dashboard/career-repository" },
@@ -141,7 +134,7 @@ export default function Sidebar() {
                     : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <Icon className="w-5 h-5 shrink-0" />
+                <Icon className="w-5 h-5 flex-shrink-0" />
                 <span className="text-left truncate">{item.label}</span>
               </button>
             );
@@ -151,7 +144,7 @@ export default function Sidebar() {
         {/* Logout */}
         <div className="p-4 border-t border-gray-200">
           <button className="w-full flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-red-50 hover:text-red-600 rounded-lg text-sm transition-all duration-200">
-            <LogOut className="w-5 h-5 shrink-0" />
+            <LogOut className="w-5 h-5 flex-shrink-0" />
             <span>Log out</span>
           </button>
         </div>

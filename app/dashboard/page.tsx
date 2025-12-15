@@ -1,16 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import { Search, Plus, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCreateUserStore } from "@/lib/stores/form_submission_store";
+import { userTypes } from "@/types/user_type";
 
-// KEEP your full main content here — unchanged except sidebar removed
 export default function DashboardPage() {
   const [expandedJob, setExpandedJob] = useState("JOB-2025-DS-005");
+  const router = useRouter();
+  const { user } = useCreateUserStore();
+
+  useEffect(() => {
+    if (user.user_type === userTypes.TALENT) {
+      router.replace("/dashboard/ai-card");
+    }
+  }, [user.user_type, router]);
+
+  if (user.user_type === userTypes.TALENT) {
+    return null;
+  }
 
   const stats = [
     { title: 'Opened Roles', value: '10', change: '+10%', trend: 'up' },
@@ -33,159 +43,196 @@ export default function DashboardPage() {
     { id: 'REQ-2025-SWE-001', screened: 19, interviews: 6, applicants: [] },
   ];
 
-
   return (
-    <>
-
-      {/* Dashboard Content */}
-      <div className="p-8 space-y-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-6">
-            {stats.map((stat, index) => (
-            <Card key={index} className="bg-linear-to-br from-indigo-50 to-purple-50 border-0">
-                <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-700">
-                    {stat.title}
-                </CardTitle>
-                </CardHeader>
-                <CardContent>
-                <div className="text-3xl font-bold text-gray-900">{stat.value}</div>
-                <div className={`text-sm font-medium mt-1 ${
-                    stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                    {stat.change}
-                </div>
-                </CardContent>
-            </Card>
-            ))}
-        </div>
-
-        {/* Screened Tracker */}
-        <Card>
-            <CardHeader>
-            <CardTitle className="text-xl font-bold">Screened Tracker</CardTitle>
+    <div className="p-4 md:p-6 space-y-6 sm:space-y-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index} className="bg-linear-to-br from-indigo-50 to-purple-50 border-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-700">
+                {stat.title}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">
-                    Screening Performance Rating
-                </span>
-                <span className="text-sm font-bold text-gray-900">80%</span>
-                </div>
-                <Progress value={80} className="h-2" />
-                <p className="text-xs text-gray-500">
-                Applicants VeriTalent ID ensures optimal screening performances
-                </p>
-            </div>
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900">{stat.value}</div>
+              <div className={`text-sm font-medium mt-1 ${
+                stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {stat.change}
+              </div>
             </CardContent>
-        </Card>
+          </Card>
+        ))}
+      </div>
 
-        {/* Post Job/CV Upload */}
-        <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Post Job/CV Upload/VeriTalent ID Upload
-            </h2>
-            <div className="grid grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                <h3 className="font-semibold text-gray-900 mb-1">Post a Job</h3>
-                <p className="text-sm text-cyan-600 font-medium">Automated Screening</p>
-                </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                <h3 className="font-semibold text-gray-900">Bulk CV Upload</h3>
-                </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                <h3 className="font-semibold text-gray-900">VeriTalent ID Upload</h3>
-                </CardContent>
-            </Card>
+      {/* Screened Tracker */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg sm:text-xl font-bold">Screened Tracker</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-medium text-gray-700">
+                Screening Performance Rating
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-gray-900">80%</span>
             </div>
+            <Progress value={80} className="h-2" />
+            <p className="text-xs text-gray-500">
+              Applicants VeriTalent ID ensures optimal screening performances
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Post Job/CV Upload */}
+      <div>
+        <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+          Post Job/CV Upload/VeriTalent ID Upload
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <h3 className="font-semibold text-gray-900 mb-1">Post a Job</h3>
+              <p className="text-sm text-cyan-600 font-medium">Automated Screening</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <h3 className="font-semibold text-gray-900">Bulk CV Upload</h3>
+            </CardContent>
+          </Card>
+          <Card className="bg-linear-to-br from-indigo-50 to-purple-50 border-0 cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="pt-6">
+              <h3 className="font-semibold text-gray-900">VeriTalent ID Upload</h3>
+            </CardContent>
+          </Card>
         </div>
+      </div>
 
-        {/* Screening Interface */}
-        <Card>
-            <CardHeader>
-            <CardTitle className="text-xl font-bold">Screening Interface</CardTitle>
-            </CardHeader>
-            <CardContent>
-            <div className="space-y-6">
-                {/* Tabs */}
-                <div className="flex gap-6 border-b border-gray-200">
-                <button className="pb-3 px-1 border-b-2 border-gray-900 font-medium text-gray-900">
-                    Opened Roles
-                </button>
-                <button className="pb-3 px-1 text-gray-500 hover:text-gray-900">
-                    Job ID
-                </button>
-                </div>
+      {/* Screening Interface */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg sm:text-xl font-bold">Screening Interface</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4 sm:space-y-6">
+            {/* Tabs */}
+            <div className="flex gap-4 sm:gap-6 border-b border-gray-200 overflow-x-auto">
+              <button className="pb-3 px-1 border-b-2 border-gray-900 font-medium text-gray-900 text-sm sm:text-base whitespace-nowrap">
+                Opened Roles
+              </button>
+              <button className="pb-3 px-1 text-gray-500 hover:text-gray-900 text-sm sm:text-base whitespace-nowrap">
+                Job ID
+              </button>
+            </div>
 
-                {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 pb-2 border-b border-gray-200">
-                <div className="col-span-4">Job IDs</div>
-                <div className="col-span-4">No. Screened</div>
-                <div className="col-span-4">No. interview</div>
-                </div>
+            {/* Table Header - Hidden on mobile */}
+            <div className="hidden sm:grid grid-cols-12 gap-4 text-sm font-medium text-gray-700 pb-2 border-b border-gray-200">
+              <div className="col-span-4">Job IDs</div>
+              <div className="col-span-4">No. Screened</div>
+              <div className="col-span-4">No. interview</div>
+            </div>
 
-                {/* Job Roles */}
-                <div className="space-y-4">
-                {jobRoles.map((job) => (
-                    <div key={job.id} className="space-y-4">
-                    <div 
-                        className="grid grid-cols-12 gap-4 items-center py-3 hover:bg-gray-50 cursor-pointer rounded-lg"
-                        onClick={() => setExpandedJob(expandedJob === job.id ? '' : job.id)}
-                    >
-                        <div className="col-span-4 font-medium text-gray-900">{job.id}</div>
-                        <div className="col-span-4 text-gray-700">{job.screened}</div>
-                        <div className="col-span-4 text-gray-700">{job.interviews}</div>
+            {/* Job Roles */}
+            <div className="space-y-4">
+              {jobRoles.map((job) => (
+                <div key={job.id} className="space-y-4">
+                  {/* Mobile Layout */}
+                  <div 
+                    className="sm:hidden bg-gray-50 p-4 rounded-lg cursor-pointer hover:bg-gray-100"
+                    onClick={() => setExpandedJob(expandedJob === job.id ? '' : job.id)}
+                  >
+                    <div className="font-medium text-gray-900 mb-2">{job.id}</div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Screened: <span className="font-medium text-gray-900">{job.screened}</span></span>
+                      <span className="text-gray-600">Interviews: <span className="font-medium text-gray-900">{job.interviews}</span></span>
                     </div>
+                  </div>
 
-                    {/* Expanded Applicants */}
-                    {expandedJob === job.id && job.applicants.length > 0 && (
-                        <Card className="ml-8 bg-gray-50">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base font-semibold">
-                            Opened Roles - {job.id}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                            <div className="grid grid-cols-12 gap-4 text-xs font-medium text-gray-600 pb-2 border-b border-gray-200">
-                                <div className="col-span-3">Applicant Names</div>
-                                <div className="col-span-3">Fit Score</div>
-                                <div className="col-span-3">Interview Rating</div>
-                                <div className="col-span-3">AI Card</div>
-                            </div>
-                            {job.applicants.map((applicant, idx) => (
-                                <div key={idx} className="grid grid-cols-12 gap-4 items-center text-sm py-2">
+                  {/* Desktop Layout */}
+                  <div 
+                    className="hidden sm:grid grid-cols-12 gap-4 items-center py-3 hover:bg-gray-50 cursor-pointer rounded-lg"
+                    onClick={() => setExpandedJob(expandedJob === job.id ? '' : job.id)}
+                  >
+                    <div className="col-span-4 font-medium text-gray-900">{job.id}</div>
+                    <div className="col-span-4 text-gray-700">{job.screened}</div>
+                    <div className="col-span-4 text-gray-700">{job.interviews}</div>
+                  </div>
+
+                  {/* Expanded Applicants */}
+                  {expandedJob === job.id && job.applicants.length > 0 && (
+                    <Card className="sm:ml-8 bg-gray-50">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm sm:text-base font-semibold">
+                          Opened Roles - {job.id}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {/* Table Header - Hidden on mobile */}
+                          <div className="hidden sm:grid grid-cols-12 gap-4 text-xs font-medium text-gray-600 pb-2 border-b border-gray-200">
+                            <div className="col-span-3">Applicant Names</div>
+                            <div className="col-span-3">Fit Score</div>
+                            <div className="col-span-3">Interview Rating</div>
+                            <div className="col-span-3">AI Card</div>
+                          </div>
+
+                          {job.applicants.map((applicant, idx) => (
+                            <div key={idx}>
+                              {/* Mobile Layout */}
+                              <div className="sm:hidden bg-white p-3 rounded-lg space-y-2">
+                                <div className="font-medium text-gray-900">{applicant.name}</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                  <div>
+                                    <span className="text-gray-600">Fit Score:</span>
+                                    <span className="ml-1 text-gray-900">{applicant.fitScore}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Interview:</span>
+                                    <span className="ml-1 text-gray-900">{applicant.interviewRating}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    applicant.aiCard === 'Available'
+                                      ? 'bg-green-100 text-brand-primary'
+                                      : 'bg-red-100 text-red-700'
+                                  }`}>
+                                    {applicant.aiCard}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Desktop Layout */}
+                              <div className="hidden sm:grid grid-cols-12 gap-4 items-center text-sm py-2">
                                 <div className="col-span-3 text-gray-700">{applicant.name}</div>
                                 <div className="col-span-3 text-gray-700">{applicant.fitScore}</div>
                                 <div className="col-span-3 text-gray-700">{applicant.interviewRating}</div>
                                 <div className="col-span-3">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                     applicant.aiCard === 'Available'
-                                        ? 'bg-green-100 text-brand-primary '
-                                        : 'bg-red-100 text-red-700'
-                                    }`}>
+                                      ? 'bg-green-100 text-brand-primary'
+                                      : 'bg-red-100 text-red-700'
+                                  }`}>
                                     {applicant.aiCard}
-                                    </span>
+                                  </span>
                                 </div>
-                                </div>
-                            ))}
+                              </div>
                             </div>
-                        </CardContent>
-                        </Card>
-                    )}
-                    </div>
-                ))}
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
+              ))}
             </div>
-            </CardContent>
-        </Card>
-        </div>
-    </>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

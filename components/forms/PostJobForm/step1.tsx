@@ -86,7 +86,7 @@ export default function PostJobForm() {
         <div className="bg-white p-8 rounded-b-lg space-y-8">
           <h2 className="text-2xl font-bold text-gray-900">Job Basics</h2>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Job ID */}
             <div className="space-y-2">
               <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-900">

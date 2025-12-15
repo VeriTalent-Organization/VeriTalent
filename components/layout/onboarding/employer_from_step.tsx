@@ -4,7 +4,12 @@ import { useCreateUserStore } from '@/lib/stores/form_submission_store';
 import { Briefcase, Building2, MapPin } from 'lucide-react';
 import FormComponent from '@/components/forms/form';
 
-const EmployerProfileStep = () => {
+interface EmployerProfileStepProps {
+  onNext?: () => void;
+  onBack?: () => void;
+}
+
+const EmployerProfileStep = ({ onNext, onBack }: EmployerProfileStepProps) => {
   const { user, setUser } = useCreateUserStore();
 
   const handleSubmit = (data: Record<string, string>) => {
@@ -15,7 +20,9 @@ const EmployerProfileStep = () => {
       location: data.location,
     });
     console.log('Employer profile data saved to store:', data);
-    // Navigate to dashboard or next step
+    if (onNext) {
+      onNext();
+    }
   };
 
   const formFields = [
@@ -77,26 +84,29 @@ const EmployerProfileStep = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center flex-col gap-8">
-      <div className="text-center max-w-xl">
-        <Text as="h1" variant="Heading" className="text-2xl md:text-3xl">
+    <div className="flex items-center justify-center flex-col gap-6 sm:gap-8 px-4 sm:px-6 py-6 sm:py-8">
+      <div className="text-center max-w-xl w-full">
+        <Text as="h1" variant="Heading" className="text-xl sm:text-2xl md:text-3xl">
           Complete Your Employer Profile
         </Text>
-        <Text as="p" variant="SubText" className="mt-2 text-gray-600">
+        <Text as="p" variant="SubText" className="mt-2 text-sm sm:text-base text-gray-600 px-4 sm:px-0">
           Complete your profile and start posting jobs, screening candidates and so on.
         </Text>
       </div>
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md px-4 sm:px-0">
         <FormComponent
           fields={formFields}
           submitButtonText="Proceed to Dashboard"
-          submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90"
+          submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90 text-sm sm:text-base"
           submitFunction={handleSubmit}
         />
 
         <div className="mt-6 text-center">
-          <button className="text-gray-600 hover:text-gray-800 text-sm flex items-center gap-2 mx-auto">
+          <button 
+            onClick={onBack} 
+            className="text-gray-600 hover:text-gray-800 text-xs sm:text-sm flex items-center gap-2 mx-auto transition-colors"
+          >
             ← Back
           </button>
         </div>

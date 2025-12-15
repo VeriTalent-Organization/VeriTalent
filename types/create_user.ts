@@ -11,4 +11,10 @@ export interface CreateUserInterface{
     current_designation?:string;
     organisation_name?:string;
     location?:string
+    rc_number?:string;
+    email_domain?:string;
+    website?:string;
+    industry?:string;
+    organisation_size?:string;
+    address?:string;
 }

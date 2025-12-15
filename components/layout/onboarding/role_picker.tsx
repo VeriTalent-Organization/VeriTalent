@@ -5,7 +5,6 @@ import { userTypes } from '@/types/user_type'
 import { Briefcase, Building2, User } from 'lucide-react'
 import React from 'react'
 
-
 const RolePickerStep = () => {
 
   const { user, setUser } = useCreateUserStore()
@@ -24,7 +23,7 @@ const RolePickerStep = () => {
         </Text>
 
         <Text as='h3' variant='SubText'>
-          First, let’s select your primary role.
+          First, let&apos;s select your primary role.
         </Text>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto px-4">

@@ -1,204 +1,250 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from "react";
 
-type CVUploadMode = 'existing' | 'create';
+export type CVUploadMode = "existing" | "create";
 
-interface CVUploadJobContextProps {
-  onModeSelect: (mode: CVUploadMode) => void;
-  onContinue: () => void; // still needed to go to next step after form
+export interface JobContextData {
+  jobTitle: string;
+  companyName: string;
+  employmentType: string;
+  location: string;
+  roleOverview: string;
 }
 
-export default function CVUploadJobContext({ onModeSelect, onContinue }: CVUploadJobContextProps) {
-  const [selectedOption, setSelectedOption] = useState<CVUploadMode | null>(null);
+interface JobContextSelectorProps {
+  defaultMode?: CVUploadMode;
+  value?: CVUploadMode;
+  onModeChange?: (mode: CVUploadMode) => void;
+  jobData?: JobContextData;
+  onJobDataChange?: (data: JobContextData) => void;
+  existingJobs?: { id: string; title: string }[];
+  onExistingJobSelected?: (jobId: string) => void;
+  labels?: {
+    title?: string;
+    existingOption?: string;
+    createOption?: string;
+    jobTitle?: string;
+    companyName?: string;
+    employmentType?: string;
+    location?: string;
+    roleOverview?: string;
+  };
+  className?: string;
+}
 
-  // Fields for Create Job Context
-  const [jobTitle, setJobTitle] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [department, setDepartment] = useState('');
-  const [employmentType, setEmploymentType] = useState('');
-  const [location, setLocation] = useState('');
-  const [seniority, setSeniority] = useState('');
-  const [roleOverview, setRoleOverview] = useState('');
+const defaultJobData: JobContextData = {
+  jobTitle: "",
+  companyName: "",
+  employmentType: "",
+  location: "",
+  roleOverview: "",
+};
 
-  const handleModeSelect = (mode: CVUploadMode) => {
-    setSelectedOption(mode);
-    onModeSelect(mode); // This tells parent: "user chose this path"
+export default function JobContextSelector({
+  value: controlledMode,
+  onModeChange,
+  jobData: controlledJobData,
+  onJobDataChange,
+  existingJobs = [],
+  onExistingJobSelected,
+  labels = {},
+  className,
+  onNext,
+  onBack,
+  canBack,
+}: JobContextSelectorProps & { onNext?: () => void; onBack?: () => void; canBack?: boolean }) {
+  const [uncontrolledJobData, setUncontrolledJobData] = useState<JobContextData>(defaultJobData);
+  const [selectedJobId, setSelectedJobId] = useState<string>("");
+
+  const selectedMode = controlledMode
+  const jobData = controlledJobData ?? uncontrolledJobData;
+
+  const handleModeChange = useCallback((mode: CVUploadMode) => {
+    if (controlledMode === undefined) {
+      onModeChange?.(mode);
+    } else {
+      onModeChange?.(mode);
+    }
+  }, [controlledMode, onModeChange]);
+  
+
+  const handleJobDataChange = (field: keyof JobContextData, value: string) => {
+    if (controlledJobData === undefined) {
+      setUncontrolledJobData(prev => {
+        const updatedData = { ...prev, [field]: value };
+        onJobDataChange?.(updatedData);
+        return updatedData;
+      });
+    } else {
+      const updatedData = { ...controlledJobData, [field]: value };
+      onJobDataChange?.(updatedData);
+    }
   };
 
-  const handleContinue = () => {
-    // validate + save context
-    onContinue(); // proceed to Bulk Upload
+
+  const handleExistingJobChange = (jobId: string) => {
+    setSelectedJobId(jobId);
+    if (jobId) {
+      onExistingJobSelected?.(jobId);
+    }
   };
 
-//   const handleContinue = () => {
-//     const payload = {
-//       jobTitle,
-//       companyName,
-//       department,
-//       employmentType,
-//       location,
-//       seniority,
-//       roleOverview,
-//     };
+  const canProceed = () => {
+    if (selectedMode === "create") {
+      return !!jobData.jobTitle && !!jobData.companyName;
+    }
+    if (selectedMode === "existing") {
+      return !!selectedJobId;
+    }
+    return false;
+  };
 
-//     console.log("Job Context:", payload);
-//   };
+  const {
+    title = "Job Context",
+    existingOption = "Link to Existing Job Post",
+    createOption = "Create Job Context",
+    jobTitle: labelJobTitle = "Job Title",
+    companyName: labelCompanyName = "Company Name",
+    employmentType: labelEmploymentType = "Employment Type",
+    location: labelLocation = "Location",
+    roleOverview: labelRoleOverview = "Role Overview",
+  } = labels;
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        
-        <h2 className="text-2xl font-semibold text-gray-900 mb-8">
-          Job Context
-        </h2>
+    <div className={` min-h-[500px] flex flex-col justify-between ${className || ""}`}>
+      <div>
+        <h2 className="text-2xl font-semibold text-gray-900 mb-8">{title}</h2>
 
-        {/* Option Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          
-          {/* Existing Job Post */}
           <div
-            className={`bg-white rounded-lg p-6 border-2 cursor-pointer transition-all ${
-              selectedOption === 'existing'
-                ? 'border-teal-600'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onClick={() => handleModeSelect('existing')}
+            className={`bg-white rounded-xl p-2 lg:p-8 border-2 cursor-pointer transition-all shadow-sm group ${selectedMode === "existing" ? "border-brand-primary bg-brand-primary-50/20" : "border-gray-200 hover:border-gray-300"
+              }`}
+            onClick={() => handleModeChange("existing")}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col items-center text-center gap-4">
+              {/* Checkbox circle */}
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                  selectedOption === 'existing'
-                    ? 'bg-teal-600'
-                    : 'bg-white border-2 border-gray-300'
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${selectedMode === "existing" ? "bg-brand-primary text-white" : "bg-white border-2 border-gray-300 group-hover:border-gray-400"
+                  }`}
               >
-                {selectedOption === 'existing' && (
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {selectedMode === "existing" && (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
-                  Link to Existing Job Post
-                </h3>
-                {selectedOption === 'existing' && (
-                  <select className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-500 bg-white">
-                    <option>Choose from your existing job posts</option>
+
+              <h3 className="text-xl font-bold text-gray-900">{existingOption}</h3>
+
+              {selectedMode === "existing" && (
+                <div className="w-full mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <select
+                    className="w-full p-2 lg:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-700 bg-white"
+                    value={selectedJobId}
+                    onChange={(e) => handleExistingJobChange(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">Choose from your existing job posts</option>
+                    {existingJobs.length > 0 ? (
+                      existingJobs.map((job) => (
+                        <option key={job.id} value={job.id}>
+                          {job.title}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="job1">Software Engineer at TechCorp</option>
+                        <option value="job2">Product Manager at InnovateX</option>
+                        <option value="job3">Data Analyst at DataSolutions</option>
+                      </>
+                    )}
                   </select>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* CREATE JOB CONTEXT */}
           <div
-            className={`bg-white rounded-lg p-6 border-2 cursor-pointer transition-all ${
-              selectedOption === 'create'
-                ? 'border-teal-600'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onClick={() => handleModeSelect('create')}
+            className={`bg-white rounded-xl p-8 border-2 cursor-pointer transition-all shadow-sm group ${selectedMode === "create" ? "border-brand-primary bg-brand-primary-50/20" : "border-gray-200 hover:border-gray-300"
+              }`}
+            onClick={() => handleModeChange("create")}
           >
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col items-center text-center gap-4">
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                  selectedOption === 'create'
-                    ? 'bg-teal-600'
-                    : 'bg-white border-2 border-gray-300'
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${selectedMode === "create" ? "bg-brand-primary text-white" : "bg-white border-2 border-gray-300 group-hover:border-gray-400"
+                  }`}
               >
-                {selectedOption === 'create' && (
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {selectedMode === "create" && (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Create Job Context
-              </h3>
+              <h3 className="text-xl font-bold text-gray-900">{createOption}</h3>
             </div>
           </div>
         </div>
 
-        {/* FORM FIELDS SHOW ONLY WHEN CREATE IS SELECTED */}
-        {selectedOption === 'create' && (
-          <div className="bg-white rounded-lg p-8 border border-gray-200">
+        {selectedMode === "create" && (
+          <div className="bg-white rounded-lg p-2 lg:p-8 border border-gray-200 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              
-              {/* Job Title */}
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Job Title
-                </label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">{labelJobTitle}</label>
                 <input
                   type="text"
                   placeholder="Software Engineer"
-                  value={jobTitle}
-                  onChange={(e) => setJobTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400"
+                  value={jobData.jobTitle}
+                  onChange={(e) => handleJobDataChange("jobTitle", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400"
                 />
               </div>
-
-              {/* Company Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Company Name
-                </label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">{labelCompanyName}</label>
                 <input
                   type="text"
                   placeholder="TechCorp"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400"
+                  value={jobData.companyName}
+                  onChange={(e) => handleJobDataChange("companyName", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400"
                 />
               </div>
-
-              {/* Employment Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Employment Type
-                </label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">{labelEmploymentType}</label>
                 <select
-                  value={employmentType}
-                  onChange={(e) => setEmploymentType(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-500 bg-white"
+                  value={jobData.employmentType}
+                  onChange={(e) => handleJobDataChange("employmentType", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-700 bg-white"
                 >
-                  <option value="">Full Time</option>
+                  <option value="">Select type</option>
                   <option value="Full-time">Full-time</option>
                   <option value="Part-time">Part-time</option>
                   <option value="Contract">Contract</option>
                   <option value="Internship">Internship</option>
                 </select>
               </div>
-
-              {/* Location */}
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Location
-                </label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">{labelLocation}</label>
                 <input
                   type="text"
                   placeholder="Fountain Hills, Arizona"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400"
+                  value={jobData.location}
+                  onChange={(e) => handleJobDataChange("location", e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400"
                 />
               </div>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Role Overview</label>
+              <label className="block text-sm font-medium text-gray-900 mb-2">{labelRoleOverview}</label>
               <textarea
-                placeholder="Role Overview"
-                value={roleOverview}
-                onChange={(e) => setRoleOverview(e.target.value)}
+                placeholder="Brief overview of the role and responsibilities..."
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-400 placeholder-gray-400 resize-none"
+                value={jobData.roleOverview}
+                onChange={(e) => handleJobDataChange("roleOverview", e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400 resize-none"
               />
             </div>
-
           </div>
         )}
-
       </div>
     </div>
   );

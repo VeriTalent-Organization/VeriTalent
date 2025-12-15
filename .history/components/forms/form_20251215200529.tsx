@@ -69,10 +69,9 @@ interface FieldConfig {
   type?: string;
   icons?: IconConfig[];
   dropdown?: DropdownConfig;
-
   /** layout */
   row?: string;        // same value = same row
-  colSpan?: number;    // grid span (1–12)
+  colSpan?: number; 
 }
 
 interface FormProps {
@@ -119,17 +118,7 @@ export default function FormComponent({
     submitFunction?.(data);
   };
 
-  /* -------- Group fields into rows -------- */
-
-  const groupedFields = fields.reduce<Record<string, FieldConfig[]>>(
-    (acc, field) => {
-      const key = field.row ?? field.name;
-      acc[key] = acc[key] || [];
-      acc[key].push(field);
-      return acc;
-    },
-    {}
-  );
+  
 
   const renderIconAddon = (iconConfig: IconConfig, fieldName: string) => {
     const align =
@@ -177,129 +166,146 @@ export default function FormComponent({
     );
   };
 
+// for rows
+  const groupedFields = fields.reduce<Record<string, FieldConfig[]>>(
+  (acc, field) => {
+    const key = field.row ?? field.name; // standalone fields get own row
+    acc[key] = acc[key] || [];
+    acc[key].push(field);
+    return acc;
+  },
+  {}
+);
   return (
     <Form {...formMethods}>
       <div className={`space-y-6 ${classNames}`}>
-        {Object.values(groupedFields).map((group, idx) => (
-          <div
-            key={idx}
-            className={
-              group.length > 1
-                ? "grid grid-cols-1 md:grid-cols-12 gap-4"
-                : "space-y-6"
-            }
-          >
-            {group.map((field) => (
-              <FormField
-                key={field.name}
-                control={formMethods.control}
-                name={field.name}
-                render={({ field: formField }) => {
-                  const startIcons = field.icons?.filter(
-                    (i) =>
-                      i.position === "start" || i.position === "inline-start"
-                  );
-                  const endIcons = field.icons?.filter(
-                    (i) => i.position === "end" || i.position === "inline-end"
-                  );
+        {Object.values(groupedFields).map((group, index) => (
+  <div
+    key={index}
+    className={
+      group.length > 1
+        ? "grid grid-cols-1 md:grid-cols-3 gap-4"
+        : "space-y-6"
+    }
+  >
+    {group.map((field) => (
+      <FormField
+        key={field.name}
+        control={formMethods.control}
+        name={field.name}
+        render={({ field: formField }) => (
+          <FormItem className={field.colSpan ? `md:col-span-${field.colSpan}` : ""}>
+            {/* existing field rendering */}
+          </FormItem>
+        )}
+      />
+    ))}
+  </div>
+))}
 
-                  return (
-                    <FormItem
-                      className={
-                        field.colSpan
-                          ? `md:col-span-${field.colSpan}`
-                          : "md:col-span-4"
-                      }
-                    >
-                      <FormLabel>{field.label}</FormLabel>
+        {fields.map((field) => (
+          <FormField
+            key={field.name}
+            control={formMethods.control}
+            name={field.name}
+            render={({ field: formField }) => {
+              const startIcons = field.icons?.filter(
+                (i) =>
+                  i.position === "start" || i.position === "inline-start"
+              );
+              const endIcons = field.icons?.filter(
+                (i) => i.position === "end" || i.position === "inline-end"
+              );
 
-                      <FormControl>
-                        <InputGroup>
-                          {startIcons?.map((icon) =>
-                            renderIconAddon(icon, field.name)
-                          )}
+              return (
+                <FormItem>
+                  <FormLabel>{field.label}</FormLabel>
 
-                          <InputGroupInput
-                            {...formField}
-                            placeholder={field.placeholder}
-                            type={
-                              field.type === "password"
-                                ? showPassword[field.name]
-                                  ? "text"
-                                  : "password"
-                                : field.type || "text"
-                            }
-                          />
-
-                          {field.type === "password" && (
-                            <InputGroupAddon align="inline-end">
-                              <InputGroupButton
-                                type="button"
-                                variant="ghost"
-                                size="icon-xs"
-                                className="h-9 w-9"
-                                onClick={() =>
-                                  togglePasswordVisibility(field.name)
-                                }
-                              >
-                                {showPassword[field.name] ? (
-                                  <EyeOff className="h-5 w-5 text-gray-400" />
-                                ) : (
-                                  <Eye className="h-5 w-5 text-gray-400" />
-                                )}
-                              </InputGroupButton>
-                            </InputGroupAddon>
-                          )}
-
-                          {endIcons?.map((icon) =>
-                            renderIconAddon(icon, field.name)
-                          )}
-
-                          {field.dropdown && (
-                            <InputGroupAddon>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <InputGroupButton variant="ghost">
-                                    {formField.value ||
-                                      field.dropdown.defaultValue}
-                                  </InputGroupButton>
-                                </DropdownMenuTrigger>
-
-                                <DropdownMenuContent
-                                  side="bottom"
-                                  align="start"
-                                >
-                                  {field.dropdown.options.map((option) => (
-                                    <DropdownMenuItem
-                                      key={option}
-                                      onClick={() => {
-                                        formField.onChange(option);
-                                        field.dropdown?.onSelect?.(option);
-                                      }}
-                                    >
-                                      {option}
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </InputGroupAddon>
-                          )}
-                        </InputGroup>
-                      </FormControl>
-
-                      {field.description && (
-                        <FormDescription>
-                          {field.description}
-                        </FormDescription>
+                  <FormControl>
+                    <InputGroup>
+                      {startIcons?.map((icon) =>
+                        renderIconAddon(icon, field.name)
                       )}
 
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-            ))}
-          </div>
+                      <InputGroupInput
+                        {...formField}
+                        placeholder={field.placeholder}
+                        type={
+                          field.type === "password"
+                            ? showPassword[field.name]
+                              ? "text"
+                              : "password"
+                            : field.type || "text"
+                        }
+                      />
+
+                      {field.type === "password" && (
+                        <InputGroupAddon align="inline-end">
+                          <InputGroupButton
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            className="h-9 w-9"
+                            onClick={() =>
+                              togglePasswordVisibility(field.name)
+                            }
+                          >
+                            {showPassword[field.name] ? (
+                              <EyeOff className="h-5 w-5 text-gray-400" />
+                            ) : (
+                              <Eye className="h-5 w-5 text-gray-400" />
+                            )}
+                          </InputGroupButton>
+                        </InputGroupAddon>
+                      )}
+
+                      {endIcons?.map((icon) =>
+                        renderIconAddon(icon, field.name)
+                      )}
+
+                      {field.dropdown && (
+                        <InputGroupAddon>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <InputGroupButton variant="ghost">
+                                {formField.value ||
+                                  field.dropdown.defaultValue}
+                              </InputGroupButton>
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent
+                              side="bottom"
+                              align="start"
+                            >
+                              {field.dropdown.options.map((option) => (
+                                <DropdownMenuItem
+                                  key={option}
+                                  onClick={() => {
+                                    formField.onChange(option);
+                                    field.dropdown?.onSelect?.(option);
+                                  }}
+                                >
+                                  {option}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </InputGroupAddon>
+                      )}
+                    </InputGroup>
+                  </FormControl>
+
+                  {field.description && (
+                    <FormDescription>
+                      {field.description}
+                    </FormDescription>
+                  )}
+
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
         ))}
 
         {formType === "login" && (

@@ -136,7 +136,6 @@ const RegistrationFormStep: React.FC<{ onNext?: () => void; onBack?: () => void 
           submitButtonText="Next →"
           submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90"
           submitFunction={handleSubmit}
-          
         />
 
         <div className="flex items-start gap-2 mt-6">

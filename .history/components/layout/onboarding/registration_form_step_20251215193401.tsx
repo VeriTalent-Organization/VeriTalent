@@ -90,29 +90,6 @@ const RegistrationFormStep: React.FC<{ onNext?: () => void; onBack?: () => void 
         },
       },
     },
-
-    // follow this flow for adding rows to the form
-//     {
-//   name: "dob",
-//   label: "Date of Birth",
-//   type: "date",
-//   row: "demographics",
-// },
-
-// {
-//   name: "age",
-//   label: "Age",
-//   type: "number",
-//   row: "demographics",
-// },
-// {
-//   name: "gender",
-//   label: "Gender",
-//   dropdown: {
-//     options: ["Male", "Female"],
-//   },
-//   row: "demographics",
-// }
   ];
 
   return (
@@ -136,7 +113,6 @@ const RegistrationFormStep: React.FC<{ onNext?: () => void; onBack?: () => void 
           submitButtonText="Next →"
           submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90"
           submitFunction={handleSubmit}
-          
         />
 
         <div className="flex items-start gap-2 mt-6">

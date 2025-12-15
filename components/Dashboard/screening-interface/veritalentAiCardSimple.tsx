@@ -146,7 +146,7 @@ export default function VeriTalentAICardSimple() {
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <button className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium flex items-center gap-2">
+          <button className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium flex items-center gap-2">
             <Download className="w-5 h-5" />
             Download PDF (VeriTalent AI Card)
           </button>

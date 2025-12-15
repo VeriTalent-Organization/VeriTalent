@@ -13,8 +13,6 @@ import PreviewAndPublish from '@/components/Dashboard/steps/preview';
 import CVUploadJobContext from '@/components/Dashboard/cv-upload/job_context';
 import BulkUpload from '@/components/Dashboard/cv-upload/bulk_upload';
 import ReviewAndAnalyze from '@/components/Dashboard/cv-upload/review';
-// import CvUploadForm from '@/components/Dashboard/cv_steps/cv_upload_form';
-// import CvPreview from '@/components/Dashboard/cv_steps/cv_preview';
 
 interface StepProps {
   onNext?: () => void;
@@ -27,7 +25,8 @@ export default function CreateJobPage() {
   // MAIN TOP TABS
   // ================================
   const [activeTab, setActiveTab] = useState("post-job");
-  const [cvUploadMode, setCvUploadMode] = useState<'existing' | 'create' | null>(null);
+  const [aiStep, setAiStep] = useState(0);
+  const [cvUploadMode, setCvUploadMode] = useState<'existing' | 'create' | null>('create');
   const [cvStep, setCvStep] = useState(0);
 
   // ================================
@@ -66,19 +65,47 @@ export default function CreateJobPage() {
   const getCvSteps = () => {
     const baseSteps = [
       {
-        // Wrapper for JobContextSelector to match step interface if needed
         component: (props: any) => (
           <CVUploadJobContext
+            value={cvUploadMode!}
+            onModeChange={setCvUploadMode}
             {...props}
-            onModeChange={(mode: any) => {
-              setCvUploadMode(mode);
-              if (mode === 'existing') {
-                // optionally auto-advance or let user click next
-              }
-            }}
-          // Adapter: if component expects onNext/onBack, pass them.
-          // But JobContextSelector might handle its own logic.
-          // We can check if `onNext` is used inside JobContextSelector (it was added in prev steps)
+          />
+        ),
+        label: "Job Context",
+      },
+      {
+        component: BulkUpload,
+        label: "Upload CVs",
+      },
+    ];
+
+    if (cvUploadMode === 'existing') {
+      return [
+        ...baseSteps,
+        { component: ReviewAndAnalyze, label: "Review & Match" },
+      ];
+    }
+
+    if (cvUploadMode === 'create') {
+      return [
+        ...baseSteps,
+        { component: ScreeningCriteriaForm, label: "Screening Criteria" },
+        { component: PreviewAndPublish, label: "Review & Process" },
+      ];
+    }
+
+    return baseSteps;
+  };
+
+  const veritalentAISteps = () => {
+    const baseSteps = [
+      {
+        component: (props: any) => (
+          <CVUploadJobContext
+            value={cvUploadMode!}
+            onModeChange={setCvUploadMode}
+            {...props}
           />
         ),
         label: "Job Context",
@@ -113,15 +140,14 @@ export default function CreateJobPage() {
   const nextCv = () => setCvStep(prev => Math.min(prev + 1, cvSteps.length - 1));
   const backCv = () => setCvStep(prev => Math.max(prev - 1, 0));
 
-
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
 
         {/* ================================ */}
         {/* TOP TABS */}
         {/* ================================ */}
-        <div className="flex gap-6 mb-6 border-b pb-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 mb-6 border-b pb-4 overflow-x-auto">
           {[
             { key: "post-job", label: "Post Job" },
             { key: "cv-upload", label: "CV Upload" },
@@ -131,9 +157,9 @@ export default function CreateJobPage() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`
-                px-4 py-2 rounded-md font-medium transition-colors
+                px-4 py-2 rounded-md font-medium transition-colors text-sm sm:text-base whitespace-nowrap
                 ${activeTab === tab.key
-                  ? "bg-teal-600 text-white shadow-sm"
+                  ? "bg-brand-primary text-white shadow-sm"
                   : "text-gray-600 hover:bg-gray-200"}
               `}
             >
@@ -149,22 +175,21 @@ export default function CreateJobPage() {
           <div className="bg-white rounded-lg shadow min-h-[600px] flex flex-col">
 
             {/* Step Counter Header */}
-            <div className="px-8 py-8 border-b border-gray-100">
+            <div className="px-4 sm:px-8 py-6 sm:py-8 border-b border-gray-100">
               <div className="flex items-center justify-between relative">
                 {/* Background track */}
-                <div className="absolute left-0 right-0 top-1/2 h-1 bg-gray-200 -z-0 mx-10" />
+                <div className="absolute left-0 right-0 top-1/2 h-1 bg-gray-200 z-0 mx-4 sm:mx-10" /> 
 
                 {postJobSteps.map((_, index) => (
                   <React.Fragment key={index}>
-                    <div className="relative z-10 flex flex-col items-center bg-white px-2">
+                    <div className="relative flex flex-col items-center bg-white px-1 sm:px-2">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-colors ring-4 ring-white
+                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-colors ring-2 sm:ring-4 ring-white
                             ${index <= postJobStep
-                            ? 'bg-teal-600 text-white'
+                            ? 'bg-brand-primary text-white'
                             : 'bg-gray-200 text-gray-400'}`}
-                      >
-                        {index + 1}
-                      </div>
+                      
+                      />
                     </div>
                   </React.Fragment>
                 ))}
@@ -172,41 +197,38 @@ export default function CreateJobPage() {
             </div>
 
             {/* Step Content */}
-            <div className="p-8 flex-1">
-              {/* Render the component for the current step */}
+            <div className="p-4 sm:p-6 lg:p-8 flex-1">
               {PostJobComponent && <PostJobComponent
-                // Pass common navigation props if the components accept them
                 onNext={nextPost}
                 onBack={backPost}
-              // Some components might behave differently if they receive specific props
               />}
 
-              {/* Footer Navigation (Global fallback if component doesn't have its own footer) */}
-              <div className="flex justify-between mt-12 pt-6 border-t border-gray-100">
+              {/* Footer Navigation */}
+              <div className="flex flex-col-reverse md:flex-row justify-between gap-4 mt-8 sm:mt-12 pt-6 border-t border-gray-100">
                 <button
                   onClick={backPost}
                   disabled={postJobStep === 0}
-                  className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
                 >
                   Back
                 </button>
 
-                <div className="flex gap-4">
-                  <button className="px-6 py-3 border border-teal-600 text-teal-600 rounded-lg hover:bg-teal-50 transition font-medium">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <button className="w-full sm:w-auto px-6 py-3 border border-brand-primary text-brand-primary rounded-lg hover:bg-cyan-50 transition font-medium text-sm sm:text-base order-2 sm:order-1">
                     Save Draft
                   </button>
 
                   {postJobStep < postJobSteps.length - 1 ? (
                     <button
                       onClick={nextPost}
-                      className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium shadow-sm"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium shadow-sm text-sm sm:text-base order-1 sm:order-2"
                     >
                       Next: {postJobSteps[postJobStep].nextLabel}
                     </button>
                   ) : (
                     <button
                       onClick={publishPostJob}
-                      className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium shadow-sm"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium shadow-sm text-sm sm:text-base order-1 sm:order-2"
                     >
                       Publish Job
                     </button>
@@ -221,33 +243,29 @@ export default function CreateJobPage() {
         {/* TAB 2: CV UPLOAD */}
         {/* ================================================================= */}
         {activeTab === "cv-upload" && (
-          <div className="bg-white p-8 rounded-lg shadow min-h-[600px] flex flex-col">
+          <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-lg shadow min-h-[600px] flex flex-col">
             {/* Progress */}
-            <div className="mb-12">
-              <div className="relative">
-                <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -z-0 rounded-full" />
-                <div
-                  className="absolute top-1/2 left-0 h-1 bg-teal-600 -z-0 rounded-full transition-all duration-300"
-                  style={{ width: `${(cvStep / (cvSteps.length - 1)) * 100}%` }}
-                />
-                <div className="flex justify-between w-full">
-                  {cvSteps.map((s, i) => (
-                    <div key={i} className="flex flex-col items-center z-10 relative">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors ring-4 ring-white
-                                ${i <= cvStep ? 'bg-teal-600 text-white' : 'bg-gray-300 text-white'}`}>
-                        {i <= cvStep && (
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                        )}
-                      </div>
-                      <span className={`absolute top-10 whitespace-nowrap text-sm font-medium ${i === cvStep ? 'text-teal-600' : 'text-gray-500'}`}>
-                        {s.label}
-                      </span>
-                    </div>
-                  ))}
+            {cvUploadMode === "create" && (
+              <div className="mb-8 sm:mb-12">
+                <div className="relative">
+                  <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 z-0 rounded-full" />
+                  <div className="flex items-center justify-between relative z-10">
+                    {cvSteps.map((step, index) => (
+                      <React.Fragment key={index}>
+                        <div className="flex flex-col items-center bg-white px-1 sm:px-2">
+                          <div
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-colors ring-2 sm:ring-4 ring-white
+                              ${index <= cvStep
+                                ? 'bg-brand-primary text-white'
+                                : 'bg-gray-200 text-gray-400'}`}
+                          />
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-
+            )}
             <div className="flex-1">
               {CurrentCvStep && <CurrentCvStep
                 onNext={nextCv}
@@ -256,21 +274,24 @@ export default function CreateJobPage() {
               />}
             </div>
 
-            <div className="flex justify-between mt-12 pt-6 border-t border-gray-100">
+            <div className="flex flex-col-reverse md:flex-row justify-between gap-4 mt-8 sm:mt-12 pt-6 border-t border-gray-100">
               <button
                 onClick={backCv}
                 disabled={cvStep === 0}
-                className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
               >
                 Back
               </button>
 
               {cvStep < cvSteps.length - 1 ? (
-                <button onClick={nextCv} className="px-8 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium">
+                <button 
+                  onClick={nextCv} 
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium text-sm sm:text-base"
+                >
                   Next: {cvSteps[cvStep + 1]?.label}
                 </button>
               ) : (
-                <button className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium text-sm sm:text-base">
                   {cvUploadMode === 'existing' ? 'Analyze CVs' : 'Process Applications'}
                 </button>
               )}
@@ -278,11 +299,71 @@ export default function CreateJobPage() {
           </div>
         )}
 
-        {/* Placeholder for AI Card Tab */}
+        {/* ================================================================= */}
+        {/* TAB 3: AI CARD */}
+        {/* ================================================================= */}
         {activeTab === "veritilent-ai" && (
-          <div className="bg-white rounded-lg shadow-lg p-16 text-center">
-            <h2 className="text-2xl font-bold text-gray-400">VeriTalent AI Card ID</h2>
-            <p className="text-gray-500 mt-2">Feature coming soon...</p>
+          <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-lg shadow min-h-[600px] flex flex-col">
+            
+            {/* Progress */}
+            {cvUploadMode === "create" && (
+              <div className="mb-8 sm:mb-12">
+                <div className="relative">
+                  <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 z-0 rounded-full" />
+                  <div className="flex items-center justify-between relative z-10">
+                    {veritalentAISteps().map((step, index) => (
+                      <React.Fragment key={index}>
+                        <div className="flex flex-col items-center bg-white px-1 sm:px-2">
+                          <div
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-colors ring-2 sm:ring-4 ring-white
+                              ${index <= aiStep
+                                ? 'bg-brand-primary text-white'
+                                : 'bg-gray-200 text-gray-400'}`}
+                          />
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex-1">
+              {veritalentAISteps()[aiStep]?.component &&
+                React.createElement(veritalentAISteps()[aiStep].component, {
+                  onNext: () =>
+                    setAiStep(prev => Math.min(prev + 1, veritalentAISteps().length - 1)),
+                  onBack: () =>
+                    setAiStep(prev => Math.max(prev - 1, 0)),
+                  canBack: aiStep > 0,
+                })}
+            </div>
+
+            {/* Footer */}
+            <div className="flex flex-col-reverse md:flex-row justify-between gap-4 mt-8 sm:mt-12 pt-6 border-t border-gray-100">
+              <button
+                onClick={() => setAiStep(prev => Math.max(prev - 1, 0))}
+                disabled={aiStep === 0}
+                className="w-full sm:w-auto px-6 py-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                Back
+              </button>
+
+              {aiStep < veritalentAISteps().length - 1 ? (
+                <button
+                  onClick={() =>
+                    setAiStep(prev => Math.min(prev + 1, veritalentAISteps().length - 1))
+                  }
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium text-sm sm:text-base"
+                >
+                  Next: {veritalentAISteps()[aiStep + 1]?.label}
+                </button>
+              ) : (
+                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium text-sm sm:text-base">
+                  Process AI Card
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

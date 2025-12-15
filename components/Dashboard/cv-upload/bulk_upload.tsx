@@ -47,7 +47,7 @@ export default function BulkUpload({
 
   return (
     <div className="min-h-[500px] flex flex-col justify-between">
-      <div className="max-w-7xl mx-auto px-6 py-8 w-full">
+      <div className="max-w-7xl mx-auto px-2 py-4 lg:px-6 lg:py-8 w-full">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Bulk Upload</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 max-w-4xl">
@@ -83,7 +83,7 @@ export default function BulkUpload({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-lg p-12 text-center transition-colors ${isDragging
-              ? 'border-brand-primary bg-teal-50'
+              ? 'border-brand-primary bg-cyan-50'
               : 'border-gray-300 bg-white'
               }`}
           >

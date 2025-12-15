@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Text } from '@/components/reuseables/text';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
@@ -7,7 +7,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 import FormComponent from '@/components/forms/form';
 
-const RegistrationFormStep = () => {
+interface RegistrationFormStepProps {
+  onNext?: () => void;
+  onBack?: () => void;
+}
+
+const RegistrationFormStep: React.FC<{ onNext?: () => void; onBack?: () => void }> & { hasNextButton?: boolean } = ({ onNext, onBack }) => {
+  const [currentStep, setCurrentStep] = useState(1);
   const { user, setUser } = useCreateUserStore();
 
   const handleSubmit = (data: Record<string, string>) => {
@@ -17,7 +23,12 @@ const RegistrationFormStep = () => {
       password: data.password,
       country: data.country,
     });
+    
     console.log('Form data saved to store:', data);
+    if (onNext) {
+      onNext();
+    }
+    
   };
 
   const formFields = [
@@ -82,13 +93,17 @@ const RegistrationFormStep = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center flex-col gap-8">
-      <div className="text-center">
-        <Text as="h1" variant="Heading">
+    <div className="flex items-center justify-center flex-col gap-6 sm:gap-8 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="text-center max-w-3xl">
+        <Text as="h1" variant="Heading" className="text-2xl sm:text-3xl lg:text-4xl">
           Join <span className="text-brand-primary">VeriTalent</span>
         </Text>
-        <Text as="p" variant="SubText" className="mt-2 text-gray-600 w-160 leading-6">
-          Whether you're a Talent, an Independent Recruiter/Manager, or represent an Organisation, create your free VeriTalent account and kick things off!
+        <Text 
+          as="p" 
+          variant="SubText" 
+          className="mt-2 text-gray-600 leading-6 text-sm sm:text-base px-4 sm:px-0"
+        >
+          Whether you&apos;re a Talent, an Independent Recruiter/Manager, or represent an Organisation, create your free VeriTalent account and kick things off!
         </Text>
       </div>
 
@@ -107,10 +122,11 @@ const RegistrationFormStep = () => {
             onCheckedChange={(checked: boolean) => {
               setUser({ has_agreed_to_terms: checked as boolean });
             }}
+            className="mt-0.5 shrink-0"
           />
           <label
             htmlFor="terms"
-            className="text-sm text-gray-600 cursor-pointer"
+            className="text-xs sm:text-sm text-gray-600 cursor-pointer leading-relaxed"
           >
             I agree to The{' '}
             <Link href="#" className="text-brand-primary hover:underline">
@@ -125,7 +141,10 @@ const RegistrationFormStep = () => {
         </div>
 
         <div className="mt-6 text-center">
-          <button className="text-gray-600 hover:text-gray-800 text-sm flex items-center gap-2 mx-auto">
+          <button 
+            onClick={onBack} 
+            className="text-gray-600 hover:text-gray-800 text-sm sm:text-base flex items-center gap-2 mx-auto transition-colors"
+          >
             ← Back
           </button>
         </div>
@@ -133,5 +152,6 @@ const RegistrationFormStep = () => {
     </div>
   );
 };
+RegistrationFormStep.hasNextButton = true;
 
 export default RegistrationFormStep;

@@ -130,7 +130,7 @@ export default function ReviewAndAnalyze({
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
                 {isComplete ? (
-                  <span className="text-4xl text-teal-600">
+                  <span className="text-4xl text-brand-primary">
                     <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                   </span>
                 ) : (
@@ -150,16 +150,16 @@ export default function ReviewAndAnalyze({
             {/* Completion Status */}
             {isComplete && (
               <div className="space-y-4 w-full max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-center gap-3 text-gray-700 bg-teal-50 p-3 rounded-lg border border-teal-100">
-                  <div className="w-6 h-6 bg-teal-600 rounded-full flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-3 text-gray-700 bg-cyan-50 p-3 rounded-lg border border-cyan-100">
+                  <div className="w-6 h-6 bg-brand-primary rounded-full flex items-center justify-center shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
                   <span className="font-medium">Your Upload has processed</span>
                 </div>
-                <div className="flex items-center gap-3 text-gray-700 bg-teal-50 p-3 rounded-lg border border-teal-100">
-                  <div className="w-6 h-6 bg-teal-600 rounded-full flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-3 text-gray-700 bg-cyan-50 p-3 rounded-lg border border-cyan-100">
+                  <div className="w-6 h-6 bg-brand-primary rounded-full flex items-center justify-center shrink-0">
                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
@@ -174,8 +174,7 @@ export default function ReviewAndAnalyze({
       </div>
 
       {/* New Footer */}
-      <div className="flex justify-between items-center mt-12 pt-8 border-t">
-        {/* Hide Back button if analysis is complete to encourage forward movement, or allow it but typical wizard flow locks in */}
+      {/* <div className="flex justify-between items-center mt-12 pt-8 border-t">
         <button
           onClick={onBack}
           className={`px-6 text-gray-500 hover:text-gray-900 flex items-center gap-2 transition ${isComplete ? 'invisible' : ''}`}
@@ -188,7 +187,7 @@ export default function ReviewAndAnalyze({
           {isComplete && (
             <button
               onClick={() => alert("Template Saved!")}
-              className="px-6 py-3 border border-teal-600 text-teal-600 rounded-lg font-medium hover:bg-teal-50 transition"
+              className="px-6 py-3 border border-brand-primary text-brand-primary rounded-lg font-medium hover:bg-cyan-50 transition"
             >
               Save as Template
             </button>
@@ -197,12 +196,12 @@ export default function ReviewAndAnalyze({
           <button
             onClick={onNext}
             disabled={!isComplete}
-            className="px-8 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+            className="px-8 py-3 bg-brand-primary text-white rounded-lg font-medium hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
           >
             {isComplete ? "Go to Screening results" : "Analyzing..."}
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

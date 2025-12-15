@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Text } from '@/components/reuseables/text';
 
 export default function ApplicationInstructions() {
   const [selectedMethod, setSelectedMethod] = useState('cv');
@@ -48,11 +49,15 @@ export default function ApplicationInstructions() {
         </div> */}
 
         {/* Application Instructions Form */}
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Application Instructions</h2>
+        <div className="bg-white rounded-lg shadow-sm p-2 lg:p-8">
+          <Text variant="SubHeadings" as="h2" className="mb-6" color="#111827">
+            Application Instructions
+          </Text>
           
           <div className="space-y-6">
-            <h3 className="text-base font-medium text-gray-900">Choose how to Apply:</h3>
+            <Text variant="RegularText" as="h3" className="mb-4" color="#111827">
+              Choose how to Apply:
+            </Text>
 
             {/* Apply via VeriTalent platform */}
             <label className="flex items-start gap-3 cursor-pointer">
@@ -62,7 +67,7 @@ export default function ApplicationInstructions() {
                 value="platform"
                 checked={selectedMethod === 'platform'}
                 onChange={(e) => setSelectedMethod(e.target.value)}
-                className="mt-1 w-5 h-5 text-teal-600 focus:ring-teal-500"
+                className="mt-1 w-5 h-5 text-brand-primary focus:ring-brand-primary"
               />
               <span className="text-gray-700">Apply via VeriTalent platform (Internal submission)</span>
             </label>
@@ -86,7 +91,7 @@ export default function ApplicationInstructions() {
                   placeholder="Enter Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="lg:ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
               )}
             </div>
@@ -100,7 +105,7 @@ export default function ApplicationInstructions() {
                   value="aicard"
                   checked={selectedMethod === 'aicard'}
                   onChange={(e) => setSelectedMethod(e.target.value)}
-                  className="mt-1 w-5 h-5 text-teal-600 focus:ring-teal-500"
+                  className="mt-1 w-5 h-5 text-brand-primary focus:ring-brand-primary"
                 />
                 <span className="text-gray-700">Share your VeriTalent AI Card ID</span>
               </label>
@@ -108,7 +113,7 @@ export default function ApplicationInstructions() {
                 <input
                   type="email"
                   placeholder="Enter Email Address"
-                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
               )}
             </div>
@@ -132,7 +137,7 @@ export default function ApplicationInstructions() {
                   value={customInstruction}
                   onChange={(e) => setCustomInstruction(e.target.value)}
                   rows={4}
-                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                 />
               )}
             </div>

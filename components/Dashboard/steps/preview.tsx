@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Text } from "@/components/reuseables/text";
 
 export default function PreviewAndPublish() {
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
@@ -18,19 +19,30 @@ export default function PreviewAndPublish() {
       <div className="bg-white border-b">
 
         {/* Preview & Publish Section */}
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Preview & Publish</h2>
+        <Text variant="SubHeadings" as="h2" className="text-xl mb-6" color="#111827">
+          Preview & Publish
+        </Text>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Preview Card */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">Preview</h3>
+          <div className="bg-white rounded-lg shadow-sm p-2 lg:p-6">
+            <Text variant="SubHeadings" as="h3" className="text-lg mb-6" color="#111827">
+              Preview
+            </Text>
             
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h4 className="text-xl font-semibold text-gray-900 mb-4">Software Engineer</h4>
+            <div className="bg-white border border-gray-200 rounded-lg p-2 lg:p-6">
+              <Text variant="RegularText" as="h4" className="text-xl mb-4" color="#111827">
+                Software Engineer
+              </Text>
               
               <div className="space-y-2 mb-4">
-                <p className="text-gray-700 font-medium">TechCorp</p>
-                <p className="text-gray-600 text-sm">Fountain Hills, Arizona</p>
+                <Text variant="SubText" className="font-medium" color="#374151">
+                  TechCorp
+                </Text>
+
+                <Text variant="SubText" className="text-sm" color="#4b5563">
+                  Fountain Hills, Arizona
+                </Text>
               </div>
 
               <div className="mb-6">
@@ -40,7 +52,9 @@ export default function PreviewAndPublish() {
               </div>
 
               <div className="bg-gray-100 rounded-lg p-4 mb-6">
-                <p className="text-gray-600 text-sm">We are seeking a highly motivated Software Engineer...</p>
+                <Text variant="SubText" className="text-sm" color="#4b5563">
+                  We are seeking a highly motivated Software Engineer...
+                </Text>
               </div>
 
               <button className="w-full bg-brand-primary hover:bg-cyan-700 text-white py-3 rounded-lg font-medium">
@@ -50,10 +64,12 @@ export default function PreviewAndPublish() {
           </div>
 
           {/* Options Panel */}
-          <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+          <div className="bg-white rounded-lg shadow-sm p-2 lg:p-6 space-y-6">
             {/* Template Options */}
             <div>
-              <h3 className="text-base font-semibold text-gray-900 mb-4">Template Options</h3>
+              <Text variant="SubHeadings" as="h3" className="text-base mb-4" color="#111827">
+                Template Options
+              </Text>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -61,13 +77,17 @@ export default function PreviewAndPublish() {
                   onChange={(e) => setSaveAsTemplate(e.target.checked)}
                   className="mt-0.5 w-5 h-5 text-brand-primary rounded focus:ring-brand-primary"
                 />
-                <span className="text-gray-700">Save as Template for Reuse</span>
+                <Text variant="SubText" color="#374151">
+                  Save as Template for Reuse
+                </Text>
               </label>
             </div>
 
             {/* Visibility Options */}
             <div>
-              <h3 className="text-base font-semibold text-gray-900 mb-4">Visibility Options</h3>
+              <Text variant="SubHeadings" as="h3" className="text-base mb-4" color="#111827">
+                Visibility Options
+              </Text>
               <div className="space-y-3">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
@@ -78,7 +98,9 @@ export default function PreviewAndPublish() {
                     onChange={(e) => setVisibilityOption(e.target.value)}
                     className="mt-0.5 w-5 h-5 text-brand-primary focus:ring-brand-primary"
                   />
-                  <span className="text-gray-700">Featured Listing on VeriTalent Only</span>
+                  <Text variant="SubText" color="#374151">
+                    Featured Listing on VeriTalent Only
+                  </Text>
                 </label>
 
                 <div>
@@ -91,10 +113,13 @@ export default function PreviewAndPublish() {
                       onChange={(e) => setVisibilityOption(e.target.value)}
                       className="mt-0.5 w-5 h-5 text-brand-primary focus:ring-brand-primary"
                     />
-                    <div>
-                      <span className="text-gray-700 font-medium">Public (Default)</span>
-                      <p className="text-gray-500 text-sm">Promote on Social Media</p>
-                    </div>
+                    <Text variant="SubText" className="font-medium" color="#374151">
+                      Public (Default)
+                    </Text>
+
+                    <Text variant="SubText" className="text-sm" color="#6b7280">
+                      Promote on Social Media
+                    </Text>
                   </label>
                 </div>
               </div>
@@ -102,14 +127,24 @@ export default function PreviewAndPublish() {
 
             {/* Job ID Info */}
             <div className="pt-4 border-t border-gray-200">
-              <p className="text-gray-700 text-sm mb-2">Job ID will be generated after Publishing</p>
-              <p className="text-gray-500 text-sm">Example: VT-1247</p>
+              <Text variant="SubText" className="text-sm mb-2" color="#374151">
+                Job ID will be generated after Publishing
+              </Text>
+
+              <Text variant="SubText" className="text-sm" color="#6b7280">
+                Example: VT-1247
+              </Text>
             </div>
 
             {/* Shareable Link */}
             <div className="pt-4 border-t border-gray-200">
-              <h3 className="text-base font-semibold text-gray-900 mb-2">Shareable Link</h3>
-              <p className="text-gray-600 text-sm">Shareable link will be available after publishing</p>
+              <Text variant="SubHeadings" as="h3" className="text-base mb-2" color="#111827">
+                Shareable Link
+              </Text>
+
+              <Text variant="SubText" className="text-sm" color="#4b5563">
+                Shareable link will be available after publishing
+              </Text>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@
 
 import FormComponent from "@/components/forms/form";
 import { useRouter } from "next/navigation";
+import { Text } from "@/components/reuseables/text";
 import { Mail, Lock } from "lucide-react";
 
 export default function LoginPage() {
@@ -49,8 +50,13 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome back</h1>
-          <p className="text-gray-600">Access your account to continue where you left off.</p>
+          <Text variant="Heading" as="h1" className="mb-2">
+            Welcome back
+          </Text>
+
+          <Text variant="SubText" color="rgba(0,0,0,0.6)">
+            Access your account to continue where you left off.
+          </Text>
         </div>
 
         <div className=" ">
@@ -59,7 +65,7 @@ export default function LoginPage() {
           <FormComponent
             fields={loginFields}
             submitButtonText="Login"
-            submitButtonStyle="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-6 rounded-lg text-lg transition shadow-md hover:shadow-lg"
+            submitButtonStyle="w-full bg-brand-primary hover:bg-cyan-700 text-white font-semibold py-6 rounded-lg text-lg transition shadow-md hover:shadow-lg"
             formType="login"
             submitFunction={handleLogin}
             classNames="space-y-7"

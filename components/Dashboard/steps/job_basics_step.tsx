@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Text } from '@/components/reuseables/text';
 import {
     Select,
     SelectContent,
@@ -29,10 +30,12 @@ export default function JobBasicsStep({ onNext, onBack, canBack }: JobBasicsStep
     });
 
     return (
-        <div className="bg-white p-8 rounded-b-lg space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900">Job Basics</h2>
+        <div className="bg-white p-1 lg:p-8 rounded-b-lg space-y-8">
+            <Text variant="SubHeadings" as="h2" className="text-2xl mb-6" color="#111827">
+                Job Basics
+            </Text>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Job ID */}
                 <div className="space-y-2">
                     <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-900">

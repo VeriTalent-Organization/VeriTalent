@@ -40,7 +40,6 @@ const defaultJobData: JobContextData = {
 };
 
 export default function JobContextSelector({
-  defaultMode = "create",
   value: controlledMode,
   onModeChange,
   jobData: controlledJobData,
@@ -53,25 +52,33 @@ export default function JobContextSelector({
   onBack,
   canBack,
 }: JobContextSelectorProps & { onNext?: () => void; onBack?: () => void; canBack?: boolean }) {
-  const [uncontrolledMode, setUncontrolledMode] = useState<CVUploadMode>(defaultMode);
   const [uncontrolledJobData, setUncontrolledJobData] = useState<JobContextData>(defaultJobData);
   const [selectedJobId, setSelectedJobId] = useState<string>("");
 
-  const selectedMode = controlledMode ?? uncontrolledMode;
+  const selectedMode = controlledMode
   const jobData = controlledJobData ?? uncontrolledJobData;
 
   const handleModeChange = useCallback((mode: CVUploadMode) => {
     if (controlledMode === undefined) {
-      setUncontrolledMode(mode);
+      onModeChange?.(mode);
+    } else {
+      onModeChange?.(mode);
     }
-    onModeChange?.(mode);
   }, [controlledMode, onModeChange]);
+  
 
-  const handleJobDataChange = useCallback((field: keyof JobContextData, value: string) => {
-    const updatedData = { ...jobData, [field]: value };
-    setUncontrolledJobData(updatedData);
-    onJobDataChange?.(updatedData);
-  }, [jobData, onJobDataChange]);
+  const handleJobDataChange = (field: keyof JobContextData, value: string) => {
+    if (controlledJobData === undefined) {
+      setUncontrolledJobData(prev => {
+        const updatedData = { ...prev, [field]: value };
+        onJobDataChange?.(updatedData);
+        return updatedData;
+      });
+    } else {
+      const updatedData = { ...controlledJobData, [field]: value };
+      onJobDataChange?.(updatedData);
+    }
+  };
 
 
   const handleExistingJobChange = (jobId: string) => {
@@ -109,14 +116,14 @@ export default function JobContextSelector({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div
-            className={`bg-white rounded-xl p-8 border-2 cursor-pointer transition-all shadow-sm group ${selectedMode === "existing" ? "border-teal-600 bg-teal-50/20" : "border-gray-200 hover:border-gray-300"
+            className={`bg-white rounded-xl p-2 lg:p-8 border-2 cursor-pointer transition-all shadow-sm group ${selectedMode === "existing" ? "border-brand-primary bg-brand-primary-50/20" : "border-gray-200 hover:border-gray-300"
               }`}
             onClick={() => handleModeChange("existing")}
           >
             <div className="flex flex-col items-center text-center gap-4">
               {/* Checkbox circle */}
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${selectedMode === "existing" ? "bg-teal-600 text-white" : "bg-white border-2 border-gray-300 group-hover:border-gray-400"
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${selectedMode === "existing" ? "bg-brand-primary text-white" : "bg-white border-2 border-gray-300 group-hover:border-gray-400"
                   }`}
               >
                 {selectedMode === "existing" && (
@@ -131,7 +138,7 @@ export default function JobContextSelector({
               {selectedMode === "existing" && (
                 <div className="w-full mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <select
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-700 bg-white"
+                    className="w-full p-2 lg:px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-700 bg-white"
                     value={selectedJobId}
                     onChange={(e) => handleExistingJobChange(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
@@ -157,13 +164,13 @@ export default function JobContextSelector({
           </div>
 
           <div
-            className={`bg-white rounded-xl p-8 border-2 cursor-pointer transition-all shadow-sm group ${selectedMode === "create" ? "border-teal-600 bg-teal-50/20" : "border-gray-200 hover:border-gray-300"
+            className={`bg-white rounded-xl p-8 border-2 cursor-pointer transition-all shadow-sm group ${selectedMode === "create" ? "border-brand-primary bg-brand-primary-50/20" : "border-gray-200 hover:border-gray-300"
               }`}
             onClick={() => handleModeChange("create")}
           >
             <div className="flex flex-col items-center text-center gap-4">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${selectedMode === "create" ? "bg-teal-600 text-white" : "bg-white border-2 border-gray-300 group-hover:border-gray-400"
+                className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${selectedMode === "create" ? "bg-brand-primary text-white" : "bg-white border-2 border-gray-300 group-hover:border-gray-400"
                   }`}
               >
                 {selectedMode === "create" && (
@@ -178,7 +185,7 @@ export default function JobContextSelector({
         </div>
 
         {selectedMode === "create" && (
-          <div className="bg-white rounded-lg p-8 border border-gray-200 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-white rounded-lg p-2 lg:p-8 border border-gray-200 animate-in fade-in slide-in-from-top-4 duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">{labelJobTitle}</label>
@@ -187,7 +194,7 @@ export default function JobContextSelector({
                   placeholder="Software Engineer"
                   value={jobData.jobTitle}
                   onChange={(e) => handleJobDataChange("jobTitle", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400"
                 />
               </div>
               <div>
@@ -197,7 +204,7 @@ export default function JobContextSelector({
                   placeholder="TechCorp"
                   value={jobData.companyName}
                   onChange={(e) => handleJobDataChange("companyName", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400"
                 />
               </div>
               <div>
@@ -205,7 +212,7 @@ export default function JobContextSelector({
                 <select
                   value={jobData.employmentType}
                   onChange={(e) => handleJobDataChange("employmentType", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-700 bg-white"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-700 bg-white"
                 >
                   <option value="">Select type</option>
                   <option value="Full-time">Full-time</option>
@@ -221,7 +228,7 @@ export default function JobContextSelector({
                   placeholder="Fountain Hills, Arizona"
                   value={jobData.location}
                   onChange={(e) => handleJobDataChange("location", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400"
                 />
               </div>
             </div>
@@ -233,7 +240,7 @@ export default function JobContextSelector({
                 rows={4}
                 value={jobData.roleOverview}
                 onChange={(e) => handleJobDataChange("roleOverview", e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400 resize-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400 resize-none"
               />
             </div>
           </div>

@@ -43,7 +43,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                   type="radio"
                   checked={data.method === 'platform'}
                   onChange={() => handleMethodChange('platform')}
-                  className="w-5 h-5 border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+                  className="w-5 h-5 border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer"
                 />
               </div>
               <div className="ml-3 text-sm">
@@ -63,7 +63,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                     type="radio"
                     checked={data.method === 'email'}
                     onChange={() => handleMethodChange('email')}
-                    className="w-5 h-5 border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+                    className="w-5 h-5 border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer"
                   />
                 </div>
                 <div className="ml-3 text-sm">
@@ -79,7 +79,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                     placeholder="Enter Email Address"
                     value={data.email}
                     onChange={(e) => handleFieldChange('email', e.target.value)}
-                    className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 bg-gray-50"
+                    className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 bg-gray-50"
                   />
                 </div>
               )}
@@ -95,7 +95,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                     type="radio"
                     checked={data.method === 'ai-card'}
                     onChange={() => handleMethodChange('ai-card')}
-                    className="w-5 h-5 border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+                    className="w-5 h-5 border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer"
                   />
                 </div>
                 <div className="ml-3 text-sm">
@@ -111,7 +111,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                     placeholder="Enter Email Address"
                     value={data.aiCardEmail}
                     onChange={(e) => handleFieldChange('aiCardEmail', e.target.value)}
-                    className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 bg-gray-50"
+                    className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 bg-gray-50"
                   />
                 </div>
               )}
@@ -127,7 +127,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                     type="radio"
                     checked={data.method === 'custom'}
                     onChange={() => handleMethodChange('custom')}
-                    className="w-5 h-5 border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+                    className="w-5 h-5 border-gray-300 text-brand-primary focus:ring-brand-primary cursor-pointer"
                   />
                 </div>
                 <div className="ml-3 text-sm">
@@ -143,7 +143,7 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
                     rows={3}
                     value={data.customInstruction}
                     onChange={(e) => handleFieldChange('customInstruction', e.target.value)}
-                    className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 bg-gray-50 resize-none"
+                    className="w-full max-w-md px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 bg-gray-50 resize-none"
                   />
                 </div>
               )}
@@ -163,14 +163,14 @@ export default function ApplicationInstructions({ data, onChange, onNext, onBack
         <div className="flex gap-4">
           <button
             onClick={() => alert("Draft Saved")}
-            className="px-8 py-3 bg-white border border-teal-200 text-teal-600 rounded-lg font-medium hover:bg-teal-50 transition shadow-sm"
+            className="px-8 py-3 bg-white border border-cyan-200 text-brand-primary rounded-lg font-medium hover:bg-cyan-50 transition shadow-sm"
           >
             Save Draft
           </button>
 
           <button
             onClick={onNext}
-            className="px-8 py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition shadow-md"
+            className="px-8 py-3 bg-brand-primary text-white rounded-lg font-medium hover:bg-cyan-700 transition shadow-md"
           >
             Next: Preview & Publish
           </button>

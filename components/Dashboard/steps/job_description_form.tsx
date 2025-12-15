@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Text } from '@/components/reuseables/text';
 
 export default function JobDescriptionForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -88,8 +89,10 @@ export default function JobDescriptionForm() {
         </div> */}
 
         {/* Form Content */}
-        <div className="bg-white p-8 rounded-b-lg">
-          <h2 className="text-2xl font-bold text-gray-900">Job Description</h2>
+        <div className="bg-white p-2 lg:p-8 rounded-b-lg">
+          <Text variant="SubHeadings" as="h2" className="text-2xl mb-6" color="#111827">
+            Job Description
+          </Text>
 
           {/* About the Role */}
           <div className="space-y-3">
@@ -105,7 +108,7 @@ export default function JobDescriptionForm() {
           </div>
 
           {/* Key Responsibilities and Required Skills */}
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Key Responsibilities */}
             <div className="space-y-3">
               <label className="block text-base font-semibold text-gray-900">

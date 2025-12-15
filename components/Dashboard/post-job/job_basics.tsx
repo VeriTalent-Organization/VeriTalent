@@ -36,7 +36,7 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
               placeholder="Job Title"
               value={data.jobTitle}
               onChange={(e) => handleChange("jobTitle", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400 bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400 bg-white"
             />
           </div>
           <div>
@@ -46,7 +46,7 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
               placeholder="Company Name"
               value={data.companyName}
               onChange={(e) => handleChange("companyName", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400 bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400 bg-white"
             />
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
               <select
                 value={data.employmentType}
                 onChange={(e) => handleChange("employmentType", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-500 bg-white appearance-none cursor-pointer"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-500 bg-white appearance-none cursor-pointer"
               >
                 <option value="">Full Time</option>
                 <option value="Full-time">Full-time</option>
@@ -77,7 +77,7 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
               <select
                 value={data.location}
                 onChange={(e) => handleChange("location", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-500 bg-white appearance-none cursor-pointer"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-v text-gray-500 bg-white appearance-none cursor-pointer"
               >
                 <option value="">Location</option>
                 <option value="New York">New York</option>
@@ -99,7 +99,7 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
             placeholder="Additional info"
             value={data.additionalInfo}
             onChange={(e) => handleChange("additionalInfo", e.target.value)}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-900 placeholder-gray-400 bg-white"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-900 placeholder-gray-400 bg-white"
           />
         </div>
 
@@ -111,7 +111,7 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
               type="date"
               value={data.applicationDeadline}
               onChange={(e) => handleChange("applicationDeadline", e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 text-gray-500 placeholder-gray-400 bg-white"
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-500 placeholder-gray-400 bg-white"
             />
             {/* Custom Calendar Icon override if needed, but native date picker usually suffices. 
                      The design shows a calendar icon on the right. 
@@ -125,14 +125,14 @@ export default function JobBasics({ data, onChange, onNext }: JobBasicsProps) {
       <div className="flex justify-between items-center mt-12 pt-8 border-t border-gray-100">
         <button
           onClick={() => alert("Draft Saved")}
-          className="px-8 py-3 bg-white border border-teal-200 text-teal-600 rounded-lg font-medium hover:bg-teal-50 transition shadow-sm"
+          className="px-8 py-3 bg-white border border-cyan-200 text-brand-primary rounded-lg font-medium hover:bg-cyan-50 transition shadow-sm"
         >
           Save Draft
         </button>
 
         <button
           onClick={onNext}
-          className="px-8 py-3 bg-teal-800 text-white rounded-lg font-medium hover:bg-teal-900 transition shadow-md"
+          className="px-8 py-3 bg-brand-primary text-white rounded-lg font-medium hover:bg-cyan-700 transition shadow-md"
         >
           Next: Job description
         </button>

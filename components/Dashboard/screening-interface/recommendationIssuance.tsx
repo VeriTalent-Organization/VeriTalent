@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from 'react';
 import { FileText, Plus } from 'lucide-react';
 import RecommendationModal from './recommendationModal';
@@ -11,9 +12,37 @@ export default function RecommendationIssuance() {
   const [recommendations, setRecommendations] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRecommendation, setSelectedRecommendation] = useState(null);
+  const [selectedRecommendation, setSelectedRecommendation] = useState<any>(null);
 
-  const handleViewClick = (recommendation: React.SetStateAction<null>) => {
+  // Sample recommendations data
+  const issuedRecommendations = [
+    {
+      issuer: 'Current User',
+      talentName: 'Hakeem Adetiba',
+      dateIssued: '03-may-2024',
+      timeline: '2020 - 2024',
+      relationshipContext: 'I worked directly with Hakeem as his team lead for 4 years.',
+      recommendations: 'Hakeem is an exceptional developer with strong problem-solving skills. He consistently delivered high-quality work and was always willing to help team members.'
+    },
+    {
+      issuer: 'Current User',
+      talentName: 'Joshua Zanni',
+      dateIssued: '09-mar-2024',
+      timeline: '2021 - 2025',
+      relationshipContext: 'I was his direct supervisor at Nestle.',
+      recommendations: 'Joshua demonstrated excellent leadership qualities and technical expertise throughout our time working together. His dedication to quality and team collaboration was outstanding.'
+    },
+    {
+      issuer: 'Current User',
+      talentName: 'Julius Abari',
+      dateIssued: '17-Jan-2024',
+      timeline: '2019 - 2024',
+      relationshipContext: 'Julius reported to me as a senior engineer for 5 years.',
+      recommendations: 'Julius is a highly skilled engineer with deep technical knowledge. He has mentored junior developers and contributed significantly to our architecture decisions.'
+    }
+  ];
+
+  const handleViewClick = (recommendation: any) => {
     setSelectedRecommendation(recommendation);
     setIsModalOpen(true);
   };
@@ -21,14 +50,6 @@ export default function RecommendationIssuance() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedRecommendation(null);
-  };
-
-  const sampleRecommendation = {
-    issuer: 'Joshua Zanni',
-    talentName: 'Joshua Zanni',
-    timeline: '2021 - 2025',
-    relationshipContext: 'I was his direct supervisor at Nestle.',
-    recommendations: 'lorem ipsum.'
   };
 
   return (
@@ -56,7 +77,7 @@ export default function RecommendationIssuance() {
           <button
             onClick={() => setActiveTab('new')}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'new'
-              ? 'bg-teal-600 text-white'
+              ? 'bg-cyan-600 text-white'
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
           >
@@ -66,7 +87,7 @@ export default function RecommendationIssuance() {
           <button
             onClick={() => setActiveTab('issued')}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === 'issued'
-              ? 'bg-teal-600 text-white'
+              ? 'bg-cyan-600 text-white'
               : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
               }`}
           >
@@ -91,7 +112,7 @@ export default function RecommendationIssuance() {
                     type="text"
                     value={talentName}
                     onChange={(e) => setTalentName(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -102,7 +123,7 @@ export default function RecommendationIssuance() {
                     type="email"
                     value={talentEmail}
                     onChange={(e) => setTalentEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -117,7 +138,7 @@ export default function RecommendationIssuance() {
                   value={relationshipTimeline}
                   onChange={(e) => setRelationshipTimeline(e.target.value)}
                   placeholder="2021 - 2025"
-                  className="w-full max-w-md px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-gray-500"
+                  className="w-full max-w-md px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-gray-500"
                 />
               </div>
 
@@ -133,7 +154,7 @@ export default function RecommendationIssuance() {
                     placeholder="I was his direct supervisor at Nestle."
                     rows={4}
                     maxLength={100}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none text-gray-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none text-gray-500"
                   />
                   <div className="absolute bottom-3 right-3 text-xs text-gray-400">
                     {relationshipContext.length}/100
@@ -152,7 +173,7 @@ export default function RecommendationIssuance() {
                     onChange={(e) => setRecommendations(e.target.value)}
                     rows={6}
                     maxLength={500}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
                   />
                   <div className="absolute bottom-3 right-3 text-xs text-gray-400">
                     {recommendations.length}/500
@@ -162,7 +183,7 @@ export default function RecommendationIssuance() {
 
               {/* Submit Button */}
               <div className="flex justify-end">
-                <button className="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium">
+                <button className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
                   Submit for Reference
                 </button>
               </div>
@@ -191,66 +212,42 @@ export default function RecommendationIssuance() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      Hakeem Adetiba
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      03-may-2024
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                          View
-                        </button>
-                        <button className="text-sm text-red-600 hover:text-red-700 font-medium">
-                          Revoke
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      Joshua Zanni
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      09-mar-2024
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                          View
-                        </button>
-                        <button className="text-sm text-red-600 hover:text-red-700 font-medium">
-                          Revoke
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      Julius Abari
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      17-Jan - 2024
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                          View
-                        </button>
-                        <button className="text-sm text-red-600 hover:text-red-700 font-medium">
-                          Revoke
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  {issuedRecommendations.map((rec, index) => (
+                    <tr key={index} className="border-b border-gray-200">
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                        {rec.talentName}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">
+                        {rec.dateIssued}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <button 
+                            onClick={() => handleViewClick(rec)}
+                            className="text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                          >
+                            View
+                          </button>
+                          <button className="text-sm text-red-600 hover:text-red-700 font-medium">
+                            Revoke
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      <RecommendationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        recommendation={selectedRecommendation}
+      />
     </div>
   );
 }

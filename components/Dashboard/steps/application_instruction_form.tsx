@@ -1,54 +1,65 @@
+'use client'
 import React, { useState } from 'react';
 import { Text } from '@/components/reuseables/text';
+import FormComponent from '@/components/forms/form'; // Adjust path as needed
 
-export default function ApplicationInstructions() {
-  const [selectedMethod, setSelectedMethod] = useState('cv');
-  const [email, setEmail] = useState('');
-  const [customInstruction, setCustomInstruction] = useState('');
+interface ApplicationInstructionsProps {
+  onNext?: () => void;
+  onBack?: () => void;
+}
 
-  const steps = [
-    { id: 1, label: 'Post job', completed: true },
-    { id: 2, label: 'CV Upload', completed: true },
-    { id: 3, label: 'VeriTalent AI Card ID', completed: true },
-    { id: 4, label: 'Application Instructions', completed: true },
-    { id: 5, label: 'Preview & Publish', completed: false }
-  ];
+export default function ApplicationInstructions({ onNext, onBack }: ApplicationInstructionsProps) {
+  const [selectedMethod, setSelectedMethod] = useState('platform');
+
+  const handleSubmit = (data: Record<string, string>) => {
+    console.log('Application Instructions data:', {
+      method: selectedMethod,
+      ...data
+    });
+    onNext?.();
+  };
+
+  // Define conditional fields based on selected method
+  const getFormFields = () => {
+    const baseFields = [];
+
+    if (selectedMethod === 'cv') {
+      baseFields.push({
+        name: 'cvEmail',
+        label: 'Email Address',
+        placeholder: 'Enter Email Address',
+        type: 'email',
+        colSpan: 12,
+      });
+    }
+
+    if (selectedMethod === 'aicard') {
+      baseFields.push({
+        name: 'aicardEmail',
+        label: 'Email Address',
+        placeholder: 'Enter Email Address',
+        type: 'email',
+        colSpan: 12,
+      });
+    }
+
+    if (selectedMethod === 'custom') {
+      baseFields.push({
+        name: 'customInstruction',
+        label: 'Custom Instructions',
+        placeholder: 'Enter your custom application instructions...',
+        type: 'textarea',
+        rows: 4,
+        colSpan: 12,
+      });
+    }
+
+    return baseFields;
+  };
 
   return (
     <div className="min-h-screen">
-
-      {/* Main Content */}
       <div className="">
-
-        {/* Progress Stepper
-        <div className="mb-12">
-          <div className="flex items-center justify-between max-w-4xl">
-            {steps.map((step, index) => (
-              <React.Fragment key={step.id}>
-                <div className="flex flex-col items-center">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    step.completed ? 'bg-teal-600' : 'bg-gray-300'
-                  }`}>
-                    {step.completed ? (
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <span className="text-white font-medium">{step.id}</span>
-                    )}
-                  </div>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className={`flex-1 h-1 mx-2 ${
-                    steps[index + 1].completed ? 'bg-teal-600' : 'bg-gray-300'
-                  }`} />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div> */}
-
-        {/* Application Instructions Form */}
         <div className="bg-white rounded-lg shadow-sm p-2 lg:p-8">
           <Text variant="SubHeadings" as="h2" className="mb-6" color="#111827">
             Application Instructions
@@ -85,15 +96,6 @@ export default function ApplicationInstructions() {
                 />
                 <span className="text-gray-700">Send your CV</span>
               </label>
-              {selectedMethod === 'cv' && (
-                <input
-                  type="email"
-                  placeholder="Enter Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="lg:ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                />
-              )}
             </div>
 
             {/* Share your VeriTalent AI Card ID */}
@@ -109,13 +111,6 @@ export default function ApplicationInstructions() {
                 />
                 <span className="text-gray-700">Share your VeriTalent AI Card ID</span>
               </label>
-              {selectedMethod === 'aicard' && (
-                <input
-                  type="email"
-                  placeholder="Enter Email Address"
-                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                />
-              )}
             </div>
 
             {/* Custom instruction */}
@@ -131,37 +126,35 @@ export default function ApplicationInstructions() {
                 />
                 <span className="text-gray-700">Custom instruction</span>
               </label>
-              {selectedMethod === 'custom' && (
-                <textarea
-                  placeholder=""
-                  value={customInstruction}
-                  onChange={(e) => setCustomInstruction(e.target.value)}
-                  rows={4}
-                  className="ml-8 w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                />
-              )}
             </div>
+
+            {/* Conditional Form Fields */}
+            {selectedMethod !== 'platform' && (
+              <div className="lg:ml-8 max-w-md">
+                <FormComponent
+                  fields={getFormFields()}
+                  submitButtonText="Next: Preview & Publish"
+                  submitButtonStyle="bg-teal-600 hover:bg-teal-700 text-white px-6"
+                  submitButtonPosition="right"
+                  showSubmitButton={true}
+                  submitFunction={handleSubmit}
+                />
+              </div>
+            )}
+
+            {/* Show submit button for platform method */}
+            {/* {selectedMethod === 'platform' && (
+              <div className="flex justify-end max-w-md lg:ml-8">
+                <button
+                  onClick={() => handleSubmit({})}
+                  className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                >
+                  Next: Preview & Publish
+                </button>
+              </div>
+            )} */}
           </div>
         </div>
-
-        {/* Navigation Buttons */}
-        {/* <div className="flex items-center justify-between mt-8 max-w-3xl">
-          <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back
-          </button>
-          
-          <div className="flex gap-3">
-            <button className="px-6 py-2 border border-teal-600 text-teal-600 rounded-lg hover:bg-teal-50">
-              Save Draft
-            </button>
-            <button className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
-              Next: Preview & Publish
-            </button>
-          </div>
-        </div> */}
       </div>
     </div>
   );

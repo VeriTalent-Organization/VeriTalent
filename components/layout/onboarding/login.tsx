@@ -48,7 +48,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center md:mx-auto justify-center bg-white md:rounded-lg max-w-xl md:shadow-xl px-4 py-12">
+    <div className="min-h-screen flex my-20 items-center md:mx-auto justify-center bg-white md:rounded-lg max-w-xl md:shadow-xl px-4 py-12">
 
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
@@ -106,3 +106,4 @@ export default function LoginPage() {
     </div>
   );
 }
+LoginPage.hasNextButton = true;

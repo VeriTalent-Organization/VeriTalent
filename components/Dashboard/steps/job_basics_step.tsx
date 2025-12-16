@@ -1,16 +1,8 @@
 'use client'
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Text } from '@/components/reuseables/text';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import FormComponent from '@/components/forms/form'; // Adjust path as needed
 
 interface JobBasicsStepProps {
     onNext?: () => void;
@@ -19,15 +11,76 @@ interface JobBasicsStepProps {
 }
 
 export default function JobBasicsStep({ onNext, onBack, canBack }: JobBasicsStepProps) {
-    const [currentStep, setCurrentStep] = useState(1);
-    const [formData, setFormData] = useState({
-        jobTitle: '',
-        companyName: '',
-        employmentType: '',
-        location: '',
-        otherInfo: '',
-        applicationDeadline: '16/09/2025'
-    });
+    const handleSubmit = (data: Record<string, string>) => {
+        console.log('Form data:', data);
+        // Handle form submission here
+        onNext?.();
+    };
+
+    const formFields = [
+        {
+            name: 'jobId',
+            label: 'Job ID',
+            placeholder: 'Job Title',
+            type: 'text',
+            row: 'row1',
+            colSpan: 6,
+        },
+        {
+            name: 'companyName',
+            label: 'Company Name',
+            placeholder: 'Company Name',
+            type: 'text',
+            row: 'row1',
+            colSpan: 6,
+        },
+        {
+            name: 'employmentType',
+            label: 'Employment Type',
+            placeholder: 'Full Time',
+            type: 'text',
+            row: 'row2',
+            colSpan: 6,
+            dropdown: {
+                options: ['Full Time', 'Part Time', 'Contract', 'Internship', 'Freelance'],
+                defaultValue: 'Full Time',
+            },
+        },
+        {
+            name: 'location',
+            label: 'Location',
+            placeholder: 'Location',
+            type: 'text',
+            row: 'row2',
+            colSpan: 6,
+            dropdown: {
+                options: ['Remote', 'Lagos, Nigeria', 'Abuja, Nigeria', 'Port Harcourt, Nigeria', 'Hybrid'],
+                defaultValue: 'Remote',
+            },
+        },
+        {
+            name: 'otherInfo',
+            label: 'Other Info (Optional)',
+            placeholder: 'Additional info',
+            type: 'textarea',
+            rows: 4,
+            colSpan: 12,
+        },
+        {
+            name: 'applicationDeadline',
+            label: 'Application Deadline',
+            placeholder: '16/09/2025',
+            type: 'text',
+            colSpan: 6,
+            icons: [
+                {
+                    icon: <Calendar className="w-5 h-5 text-gray-400" />,
+                    position: 'inline-end' as const,
+                    type: 'icon' as const,
+                },
+            ],
+        },
+    ];
 
     return (
         <div className="bg-white p-1 lg:p-8 rounded-b-lg space-y-8">
@@ -35,113 +88,14 @@ export default function JobBasicsStep({ onNext, onBack, canBack }: JobBasicsStep
                 Job Basics
             </Text>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Job ID */}
-                <div className="space-y-2">
-                    <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-900">
-                        Job ID
-                    </label>
-                    <Input
-                        id="jobTitle"
-                        type="text"
-                        placeholder="Job Title"
-                        value={formData.jobTitle}
-                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-                        className="w-full"
-                    />
-                </div>
-
-                {/* Company Name */}
-                <div className="space-y-2">
-                    <label htmlFor="companyName" className="block text-sm font-medium text-gray-900">
-                        Company Name
-                    </label>
-                    <Input
-                        id="companyName"
-                        type="text"
-                        placeholder="Company Name"
-                        value={formData.companyName}
-                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                        className="w-full"
-                    />
-                </div>
-
-                {/* Employment Type */}
-                <div className="space-y-2">
-                    <label htmlFor="employmentType" className="block text-sm font-medium text-gray-900">
-                        Employment Type
-                    </label>
-                    <Select
-                        value={formData.employmentType}
-                        onValueChange={(value) => setFormData({ ...formData, employmentType: value })}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Full Time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="full-time">Full Time</SelectItem>
-                            <SelectItem value="part-time">Part Time</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="internship">Internship</SelectItem>
-                            <SelectItem value="freelance">Freelance</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Location */}
-                <div className="space-y-2">
-                    <label htmlFor="location" className="block text-sm font-medium text-gray-900">
-                        Location
-                    </label>
-                    <Select
-                        value={formData.location}
-                        onValueChange={(value) => setFormData({ ...formData, location: value })}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Location" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="remote">Remote</SelectItem>
-                            <SelectItem value="lagos">Lagos, Nigeria</SelectItem>
-                            <SelectItem value="abuja">Abuja, Nigeria</SelectItem>
-                            <SelectItem value="port-harcourt">Port Harcourt, Nigeria</SelectItem>
-                            <SelectItem value="hybrid">Hybrid</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            {/* Other Info */}
-            <div className="space-y-2">
-                <label htmlFor="otherInfo" className="block text-sm font-medium text-gray-900">
-                    Other Info (Optional)
-                </label>
-                <textarea
-                    id="otherInfo"
-                    rows={4}
-                    placeholder="Additional info"
-                    value={formData.otherInfo}
-                    onChange={(e) => setFormData({ ...formData, otherInfo: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none resize-none"
-                />
-            </div>
-
-            {/* Application Deadline */}
-            <div className="space-y-2">
-                <label htmlFor="deadline" className="block text-sm font-medium text-gray-900">
-                    Application Deadline
-                </label>
-                <div className="relative max-w-xs">
-                    <Input
-                        id="deadline"
-                        type="text"
-                        value={formData.applicationDeadline}
-                        onChange={(e) => setFormData({ ...formData, applicationDeadline: e.target.value })}
-                        className="w-full pr-10"
-                    />
-                    <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-            </div>
+            <FormComponent
+                fields={formFields}
+                submitButtonText="Next"
+                submitButtonStyle="bg-cyan-600 hover:bg-cyan-700 text-white px-8"
+                submitButtonPosition="right"
+                showSubmitButton={false}
+                // submitFunction={handleSubmit}
+            />
         </div>
     );
 }

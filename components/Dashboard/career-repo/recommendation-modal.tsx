@@ -22,7 +22,7 @@ const RecommendationModal = ({ onClose }: RecommendationModalProps) => {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between sticky top-0 p-6 border-b">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Recommendation</h2>
           </div>
@@ -95,7 +95,7 @@ const RecommendationModal = ({ onClose }: RecommendationModalProps) => {
         </div>
 
         {/* Modal Footer */}
-        <div className="flex gap-3 p-6 border-t bg-gray-50">
+        <div className="flex gap-3 p-6 border-t sticky bottom-0 bg-gray-50">
           <button className="flex-1 px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
             Share
           </button>

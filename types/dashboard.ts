@@ -60,3 +60,44 @@ export interface RepositoryItem {
   showOnCard: boolean;
   actions: number;
 }
+
+// types/verifyIssue.ts
+export type ViewMode = 'new' | 'inbox' | 'issued';
+export type TabType = 'work' | 'other';
+
+export interface Request {
+  talent: string;
+  credentialType: string;
+  dateSubmitted: string;
+  status: string;
+}
+
+export interface BulkRecord {
+  talent: string;
+  credentialType: string;
+  dateIssued: string;
+  status: string;
+}
+
+export interface IssuedRecord {
+  talent: string;
+  credentialType: string;
+  dateIssued: string;
+  status: string;
+  statusColor: string;
+  isBulk?: boolean;
+  bulkRecords?: BulkRecord[];
+  dateSubmitted?: string;
+}
+
+export interface FormData {
+  issuer: string;
+  talentName: string;
+  talentEmail: string;
+  roleDepartment: string;
+  employmentType: string;
+  onsite: string;
+  startDate: string;
+  endDate: string;
+  responsibilities: string;
+}

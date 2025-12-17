@@ -20,7 +20,7 @@ const CertificateModal = ({ onClose }: CertificateModalProps) => {
         className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[87vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between sticky top-0 p-6 border-b">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Certificate</h2>
             <span className="text-sm text-gray-500">Listing</span>
@@ -97,7 +97,7 @@ const CertificateModal = ({ onClose }: CertificateModalProps) => {
         </div>
 
         {/* Modal Footer */}
-        <div className="flex justify-end p-6 border-t bg-gray-50">
+        <div className="flex justify-end p-6 border-t sticky bottom-0 bg-gray-50">
           <button className="px-8 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
             Edit
           </button>

@@ -48,7 +48,7 @@ export default function BulkInterviewScheduleCompact() {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between sticky top-0 p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">Bulk Interview Schedule</h2>
@@ -190,7 +190,7 @@ export default function BulkInterviewScheduleCompact() {
               />
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 sticky bottom-0">
                 <button className="flex-1 px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm">
                   Cancel
                 </button>

@@ -1,11 +1,37 @@
 import { X } from 'lucide-react';
-import React from 'react'
+import React, { useState } from 'react'
+import { Request } from '@/types/dashboard';
 
 interface MembershipReferenceModalProps {
+  requestData?: Request;
+  viewMode?: "organization" | "talent";
   onClose: () => void;
 }
 
-const MembershipReferenceModal = ({ onClose }: MembershipReferenceModalProps) => {
+const MembershipReferenceModal = ({ 
+  onClose, 
+  viewMode = "talent",
+  requestData 
+}: MembershipReferenceModalProps) => {
+  const [declineReason, setDeclineReason] = useState("");
+
+  const handleApprove = () => {
+    console.log("Approved", requestData);
+    onClose();
+  };
+
+  const handleDecline = () => {
+    console.log("Declined with reason:", declineReason, requestData);
+    onClose();
+  };
+
+  const handleShare = () => {
+    console.log("Share reference", requestData);
+  };
+
+  const handleDownload = () => {
+    console.log("Download reference", requestData);
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end p-2 md:p-4 justify-center">
@@ -21,13 +47,13 @@ const MembershipReferenceModal = ({ onClose }: MembershipReferenceModalProps) =>
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-2 md:p-6 border-b">
+        <div className="flex items-center justify-between sticky top-0 p-2 md:p-6 border-b bg-white">
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Membership Reference</h2>
             <span className="text-sm text-brand-primary font-medium">Active</span>
           </div>
           <button
-            onClick= {onClose}
+            onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X size={24} />
@@ -93,10 +119,10 @@ const MembershipReferenceModal = ({ onClose }: MembershipReferenceModalProps) =>
             </div>
           </div>
 
-          {/* Status in Context */}
+          {/* Reference In Context / Status in Context */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status in Context
+              {viewMode === "organization" ? "Reference In Context" : "Status in Context"}
             </label>
             <div className="px-4 py-3 bg-gray-100 rounded-lg text-gray-700">
               Member in good standing, dues paid.
@@ -129,16 +155,43 @@ const MembershipReferenceModal = ({ onClose }: MembershipReferenceModalProps) =>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex gap-3 p-2 md:p-6 border-t bg-gray-50">
-          <button className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700">
-            Share
-          </button>
-          <button className="flex-1 px-2 md:px-6 text-sm py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700">
-            Download
-          </button>
-          <button className="flex-1 px-2 text-sm md:px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700">
-            Request Update
-          </button>
+        <div className="flex gap-3 p-2 md:p-6 border-t sticky bottom-0 bg-white">
+          {viewMode === "organization" ? (
+            <>
+              <button 
+                onClick={handleApprove}
+                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              >
+                Update
+              </button>
+              <button 
+                onClick={handleDecline}
+                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Revoke
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={handleShare}
+                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              >
+                Share
+              </button>
+              <button 
+                onClick={handleDownload}
+                className="flex-1 px-2 md:px-6 text-sm py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              >
+                Download
+              </button>
+              <button 
+                className="flex-1 px-2 text-sm md:px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              >
+                Request Update
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

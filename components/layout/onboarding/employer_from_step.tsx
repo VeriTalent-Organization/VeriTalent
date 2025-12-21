@@ -115,4 +115,6 @@ const EmployerProfileStep = ({ onNext, onBack }: EmployerProfileStepProps) => {
   );
 };
 
+EmployerProfileStep.hasNextButton = true;
+
 export default EmployerProfileStep;

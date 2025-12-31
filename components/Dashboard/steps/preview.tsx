@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
 import { Text } from "@/components/reuseables/text";
 
-export default function PreviewAndPublish() {
+interface PreviewAndPublishProps {
+  onNext?: () => void;
+  onDataChange?: (data: Record<string, boolean | string>) => void;
+}
+
+export default function PreviewAndPublish({ onDataChange }: PreviewAndPublishProps) {
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
   const [visibilityOption, setVisibilityOption] = useState('public');
 
-  const steps = [
-    { id: 1, label: 'Post job', completed: true },
-    { id: 2, label: 'CV Upload', completed: true },
-    { id: 3, label: 'VeriTalent AI Card ID', completed: true },
-    { id: 4, label: 'Application Instructions', completed: true },
-    { id: 5, label: 'Preview & Publish', completed: true }
-  ];
+  const handleSaveAsTemplateChange = (checked: boolean) => {
+    setSaveAsTemplate(checked);
+    onDataChange?.({
+      saveAsTemplate: checked,
+      visibilityOption
+    });
+  };
+
+  const handleVisibilityChange = (value: string) => {
+    setVisibilityOption(value);
+    onDataChange?.({
+      saveAsTemplate,
+      visibilityOption: value
+    });
+  };
 
   return (
     <div className="min-h-screen">
@@ -74,7 +87,7 @@ export default function PreviewAndPublish() {
                 <input
                   type="checkbox"
                   checked={saveAsTemplate}
-                  onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                  onChange={(e) => handleSaveAsTemplateChange(e.target.checked)}
                   className="mt-0.5 w-5 h-5 text-brand-primary rounded focus:ring-brand-primary"
                 />
                 <Text variant="SubText" color="#374151">
@@ -95,7 +108,7 @@ export default function PreviewAndPublish() {
                     name="visibility"
                     value="featured"
                     checked={visibilityOption === 'featured'}
-                    onChange={(e) => setVisibilityOption(e.target.value)}
+                    onChange={(e) => handleVisibilityChange(e.target.value)}
                     className="mt-0.5 w-5 h-5 text-brand-primary focus:ring-brand-primary"
                   />
                   <Text variant="SubText" color="#374151">
@@ -110,7 +123,7 @@ export default function PreviewAndPublish() {
                       name="visibility"
                       value="public"
                       checked={visibilityOption === 'public'}
-                      onChange={(e) => setVisibilityOption(e.target.value)}
+                      onChange={(e) => handleVisibilityChange(e.target.value)}
                       className="mt-0.5 w-5 h-5 text-brand-primary focus:ring-brand-primary"
                     />
                     <Text variant="SubText" className="font-medium" color="#374151">

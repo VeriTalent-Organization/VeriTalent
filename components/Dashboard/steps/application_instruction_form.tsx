@@ -5,17 +5,19 @@ import FormComponent from '@/components/forms/form'; // Adjust path as needed
 
 interface ApplicationInstructionsProps {
   onNext?: () => void;
-  onBack?: () => void;
+  onDataChange?: (data: Record<string, string | boolean>) => void;
 }
 
-export default function ApplicationInstructions({ onNext, onBack }: ApplicationInstructionsProps) {
+export default function ApplicationInstructions({ onNext, onDataChange }: ApplicationInstructionsProps) {
   const [selectedMethod, setSelectedMethod] = useState('platform');
 
   const handleSubmit = (data: Record<string, string>) => {
-    console.log('Application Instructions data:', {
-      method: selectedMethod,
+    const fullData = {
+      applicationMethod: selectedMethod,
       ...data
-    });
+    };
+    console.log('Application Instructions data:', fullData);
+    onDataChange?.(fullData);
     onNext?.();
   };
 
@@ -143,16 +145,16 @@ export default function ApplicationInstructions({ onNext, onBack }: ApplicationI
             )}
 
             {/* Show submit button for platform method */}
-            {/* {selectedMethod === 'platform' && (
-              <div className="flex justify-end max-w-md lg:ml-8">
+            {selectedMethod === 'platform' && (
+              <div className="flex justify-end mt-6">
                 <button
                   onClick={() => handleSubmit({})}
-                  className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+                  className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700"
                 >
                   Next: Preview & Publish
                 </button>
               </div>
-            )} */}
+            )}
           </div>
         </div>
       </div>

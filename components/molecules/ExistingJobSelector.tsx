@@ -5,12 +5,14 @@ interface ExistingJobSelectorProps {
   selectedJobId: string;
   existingJobs: ExistingJob[];
   onJobSelect: (jobId: string) => void;
+  isLoading?: boolean;
 }
 
 export default function ExistingJobSelector({
   selectedJobId,
   existingJobs,
-  onJobSelect
+  onJobSelect,
+  isLoading = false
 }: ExistingJobSelectorProps) {
   return (
     <div className="w-full mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -20,20 +22,16 @@ export default function ExistingJobSelector({
         onChange={(e) => onJobSelect(e.target.value)}
         onClick={(e) => e.stopPropagation()}
       >
-        <option value="">Choose from your existing job posts</option>
-        {existingJobs.length > 0 ? (
+        <option value="">{isLoading ? 'Loading jobs...' : 'Choose from your existing job posts'}</option>
+        {!isLoading && existingJobs.length > 0 ? (
           existingJobs.map((job) => (
-            <option key={job.id} value={job.id}>
-              {job.title}
+            <option key={job._id} value={job._id}>
+              {job.title} - {job.companyName} ({job.status})
             </option>
           ))
-        ) : (
-          <>
-            <option value="job1">Software Engineer at TechCorp</option>
-            <option value="job2">Product Manager at InnovateX</option>
-            <option value="job3">Data Analyst at DataSolutions</option>
-          </>
-        )}
+        ) : !isLoading && existingJobs.length === 0 ? (
+          <option value="" disabled>No jobs posted yet</option>
+        ) : null}
       </select>
     </div>
   );

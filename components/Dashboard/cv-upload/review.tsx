@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { tapiService } from '@/lib/services/tapiService';
 
 export default function ReviewAndAnalyze({
   onNext,
@@ -18,6 +19,8 @@ export default function ReviewAndAnalyze({
         if (prev >= 100) {
           setIsComplete(true);
           clearInterval(interval);
+          // Call API when analysis is complete
+          handleAnalysisComplete();
           return 100;
         }
         return prev + 2;
@@ -26,6 +29,19 @@ export default function ReviewAndAnalyze({
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleAnalysisComplete = async () => {
+    try {
+      // Sample FormData - in real implementation, use actual files from BulkUpload
+      const formData = new FormData();
+      // formData.append('file', file);
+      await tapiService.submit(formData);
+      alert("Analysis submitted successfully!");
+    } catch (error) {
+      console.error("Failed to submit analysis:", error);
+      alert("Failed to submit analysis. Please try again.");
+    }
+  };
 
   return (
     <div className="min-h-[500px] flex flex-col justify-between">

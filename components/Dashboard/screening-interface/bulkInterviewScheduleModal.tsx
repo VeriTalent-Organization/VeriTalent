@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function BulkInterviewScheduleCompact() {
+interface BulkInterviewScheduleCompactProps {
+  onClose: () => void;
+}
+
+export default function BulkInterviewScheduleCompact({ onClose }: BulkInterviewScheduleCompactProps) {
   const [interviewMode, setInterviewMode] = useState('virtual');
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState('April 20, 2025');
@@ -45,20 +49,20 @@ export default function BulkInterviewScheduleCompact() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-end justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between sticky top-0 p-6 border-b border-gray-200">
+        <div className="flex items-center bg-white justify-between sticky top-0 p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">Bulk Interview Schedule</h2>
           </div>
-          <button className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Candidate Section */}
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-4">
@@ -111,7 +115,7 @@ export default function BulkInterviewScheduleCompact() {
 
           {/* Date and Time Selection */}
           <div className="mb-6">
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
               <input
                 type="text"
                 value={startDate}
@@ -141,7 +145,7 @@ export default function BulkInterviewScheduleCompact() {
           </div>
 
           {/* Layout with Calendar and Notes side by side */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Calendar */}
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -190,11 +194,11 @@ export default function BulkInterviewScheduleCompact() {
               />
 
               {/* Action Buttons */}
-              <div className="flex gap-3 sticky bottom-0">
-                <button className="flex-1 px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm">
+              <div className="flex gap-3 sticky bottom-0 bg-white pt-3">
+                <button onClick={onClose} className="flex-1 px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm">
                   Cancel
                 </button>
-                <button className="flex-1 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm">
+                <button onClick={onClose} className="flex-1 px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm">
                   Send Invite
                 </button>
               </div>

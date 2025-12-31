@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { X, Search } from 'lucide-react';
 
-export default function CandidateSelectionModal() {
+interface CandidateSelectionModalProps {
+  onClose: () => void;
+}
+
+export default function CandidateSelectionModal({ onClose }: CandidateSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [candidates, setCandidates] = useState([
     { id: 1, name: 'Sam Sulek', fitScore: '60%', selected: true },
@@ -27,20 +31,20 @@ export default function CandidateSelectionModal() {
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
+    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-900">Candidate Selection</h2>
-          <button className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Search and Select All */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -53,15 +57,15 @@ export default function CandidateSelectionModal() {
             </div>
             <button
               onClick={selectAll}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap"
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap w-full sm:w-auto"
             >
               Select All
             </button>
           </div>
 
           {/* Table */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
-            <table className="w-full">
+          <div className="border border-gray-200 rounded-lg overflow-x-auto mb-6">
+            <table className="min-w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
@@ -112,11 +116,11 @@ export default function CandidateSelectionModal() {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between sticky bottom-0 bg-white p-4 sm:p-6 border-t border-gray-200">
             <button className="px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors">
               {selectedCount} Selected
             </button>
-            <button className="px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            <button onClick={onClose} className="px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
               Next
             </button>
           </div>

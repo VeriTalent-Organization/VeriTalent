@@ -1,10 +1,11 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { Recommendation } from '@/types/dashboard';
 
 interface RecommendationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  recommendation: any;
+  recommendation: Recommendation | null;
 }
 
 
@@ -13,9 +14,9 @@ export default function RecommendationModal({ isOpen, onClose, recommendation }:
 
   return (
     <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white">
           <h2 className="text-xl font-semibold text-gray-900">Recommendation</h2>
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-md text-xs font-medium">
@@ -31,7 +32,7 @@ export default function RecommendationModal({ isOpen, onClose, recommendation }:
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6">
           {/* Issuer */}
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -43,7 +44,7 @@ export default function RecommendationModal({ isOpen, onClose, recommendation }:
           </div>
 
           {/* Talent Name and Timeline */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
                 Talent Name
@@ -84,7 +85,7 @@ export default function RecommendationModal({ isOpen, onClose, recommendation }:
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+        <div className="flex justify-end gap-3 p-4 sm:p-6 border-t border-gray-200 sticky bottom-0 bg-white">
           <button className="px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
             Share
           </button>

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import ProgressIndicator from './ProgressIndicator';
 import StepFooter from './StepFooter';
 import CVUploadJobContext from '@/components/Dashboard/cv-upload/job_context';
 import BulkUpload from '@/components/Dashboard/cv-upload/bulk_upload';
@@ -10,21 +9,28 @@ import PreviewAndPublish from '@/components/Dashboard/steps/preview';
 export default function CVUploadTab() {
   const [currentStep, setCurrentStep] = useState(0);
   const [uploadMode, setUploadMode] = useState<'existing' | 'create' | null>('create');
+  const [selectedJobData, setSelectedJobData] = useState<{ jobId: string; companyName: string } | null>(null);
+  const [selectedJobId, setSelectedJobId] = useState<string>('');
 
   const getCvSteps = () => {
     const baseSteps = [
       {
-        component: (props: any) => (
+        component: (props: { onNext?: () => void; onBack?: () => void; canBack?: boolean }) => (
           <CVUploadJobContext
             value={uploadMode!}
             onModeChange={setUploadMode}
+            onJobSelected={setSelectedJobData}
+            selectedJobId={selectedJobId}
+            onJobIdChange={setSelectedJobId}
             {...props}
           />
         ),
         label: "Job Context",
       },
       {
-        component: BulkUpload,
+        component: (props: { onNext?: () => void; onBack?: () => void; canBack?: boolean }) => (
+          <BulkUpload {...props} selectedJob={selectedJobData} />
+        ),
         label: "Upload CVs",
       },
     ];

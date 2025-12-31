@@ -32,7 +32,7 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
     <div className="bg-white border-b sticky z-999 top-0 border-gray-200 px-4 md:px-8 py-4">
       {!isMobile ? (
         <div className="flex items-center justify-between">
-          <Text variant="Heading" as="h1" className="text-gray-900">
+          <Text variant="SubHeadings" as="h2" className="text-gray-900">
             Dashboard
           </Text>
 
@@ -51,16 +51,16 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
             {user.user_type !== userTypes.TALENT && (
               <Link
                 href="/dashboard/postAJob"
-                className="flex items-center bg-brand-primary hover:bg-cyan-700 text-white px-3 py-2 rounded"
+                className="flex items-center text-sm bg-brand-primary hover:bg-cyan-700 text-white px-3 py-2 rounded"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Post a Job
               </Link>
             )}
             {/* User Icon */}
-            <button className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200">
+            <Link href="/dashboard/profile" className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200">
               <User className="w-5 h-5 text-gray-600" />
-            </button>
+            </Link>
           </div>
         </div>
       ) : ( 

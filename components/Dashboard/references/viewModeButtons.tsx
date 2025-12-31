@@ -14,7 +14,7 @@ interface ViewModeButtonsProps {
 }
 
 const viewButtons: ViewButton[] = [
-  { mode: 'new', label: 'New Issuance', icon: Monitor },
+  { mode: 'new', label: 'Direct Issuance', icon: Monitor },
   { mode: 'inbox', label: 'Request Inbox', icon: Inbox },
   { mode: 'issued', label: 'Issued Records', icon: FileText },
 ];

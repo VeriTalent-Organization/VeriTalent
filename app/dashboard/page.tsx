@@ -6,9 +6,18 @@ import { Progress } from "@/components/ui/progress";
 import { useRouter } from "next/navigation";
 import { useCreateUserStore } from "@/lib/stores/form_submission_store";
 import { userTypes } from "@/types/user_type";
+import { jobsService } from "@/lib/services/jobsService";
+import { screeningService } from "@/lib/services/screeningService";
 
 export default function DashboardPage() {
   const [expandedJob, setExpandedJob] = useState("JOB-2025-DS-005");
+  const [stats, setStats] = useState([
+    { title: 'Opened Roles', value: '0', change: '+0%', trend: 'up' },
+    { title: 'Applications Received', value: '0', change: '+0%', trend: 'up' },
+    { title: 'Interview Shortlist', value: '0', change: '-0%', trend: 'down' },
+  ]);
+  const [jobRoles, setJobRoles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { user } = useCreateUserStore();
 
@@ -18,30 +27,50 @@ export default function DashboardPage() {
     }
   }, [user.user_type, router]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [jobs, sessions] = await Promise.all([
+          jobsService.getMyPosted(),
+          screeningService.getSessions()
+        ]);
+        // Map jobs to jobRoles format
+        setJobRoles(jobs.map((job: any) => ({
+          id: job.id,
+          screened: sessions.filter((s: any) => s.jobId === job.id).length,
+          interviews: 0, // Calculate from sessions
+          applicants: [] // Need to fetch applicants separately
+        })));
+        setStats([
+          { title: 'Opened Roles', value: jobs.length.toString(), change: '+0%', trend: 'up' },
+          { title: 'Applications Received', value: '0', change: '+0%', trend: 'up' }, // Need API for this
+          { title: 'Interview Shortlist', value: '0', change: '-0%', trend: 'down' },
+        ]);
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (user.user_type !== userTypes.TALENT) {
+      fetchData();
+    }
+  }, [user.user_type]);
+
   if (user.user_type === userTypes.TALENT) {
     return null;
   }
 
-  const stats = [
-    { title: 'Opened Roles', value: '10', change: '+10%', trend: 'up' },
-    { title: 'Applications Received', value: '100', change: '+20%', trend: 'up' },
-    { title: 'Interview Shortlist', value: '50', change: '-5%', trend: 'down' },
-  ];
-
-  const jobRoles = [
-    {
-      id: 'JOB-2025-DS-005',
-      screened: 20,
-      interviews: 5,
-      applicants: [
-        { name: 'Sam Sulek', fitScore: '60%', interviewRating: '72%', aiCard: 'Available' },
-        { name: 'Parlola Ajayi', fitScore: '57%', interviewRating: '73%', aiCard: 'Available' },
-        { name: 'Peace Olayemi', fitScore: '40%', interviewRating: '-', aiCard: 'Not available' },
-      ]
-    },
-    { id: 'REF-2025-FED-003', screened: 32, interviews: 15, applicants: [] },
-    { id: 'REQ-2025-SWE-001', screened: 19, interviews: 6, applicants: [] },
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6 sm:space-y-8">
@@ -180,7 +209,7 @@ export default function DashboardPage() {
                             <div className="col-span-3">AI Card</div>
                           </div>
 
-                          {job.applicants.map((applicant, idx) => (
+                          {job.applicants.map((applicant: any, idx: number) => (
                             <div key={idx}>
                               {/* Mobile Layout */}
                               <div className="sm:hidden bg-white p-3 rounded-lg space-y-2">

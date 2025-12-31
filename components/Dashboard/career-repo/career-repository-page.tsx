@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AddExistingRecordForm from "@/components/molecules/addExistingRecordForm";
 import CertificateVerificationComponent from "./certificate-verification-component";
 import WorkReferenceComponent from "./work-reference-component";
@@ -11,75 +11,38 @@ import InternalLPIFeed from "@/components/molecules/InternalLPIFeed";
 import InstitutionalLPISync from "@/components/molecules/InstitutionalLPISync";
 import ModalManager from "@/components/molecules/ModalManager";
 import { PageMode, LPIMode, RepositoryType, RepositoryItem } from "@/types/dashboard";
-
-const repositories: RepositoryItem[] = [
-  {
-    type: "Work Reference",
-    badge: "Pending",
-    badgeColor: "bg-yellow-100 text-yellow-700",
-    organization: "ABC Corp",
-    subtitle: "Internship (Developer)",
-    period: "2018 - Ended",
-    showOnCard: true,
-    actions: 3,
-  },
-  {
-    type: "Membership Reference",
-    badge: "Verified/Fully",
-    badgeColor: "bg-green-100 text-green-700",
-    organization: "Alumni Association",
-    subtitle: "Membership",
-    period: "Active (2023–2025)",
-    showOnCard: true,
-    actions: 3,
-  },
-  {
-    type: "Certificate Verification",
-    badge: "Processed",
-    badgeColor: "bg-green-100 text-green-700",
-    organization: "University of Lagos",
-    subtitle: "B.Sc. Computer Science",
-    period: "Issued Oct 2020",
-    showOnCard: true,
-    actions: 3,
-  },
-  {
-    type: "Certificate",
-    badge: "Check Verification Link",
-    badgeColor: "bg-red-100 text-red-700",
-    organization: "Certificate",
-    subtitle: "Google Digital Certificate",
-    period: "Jan 2023 – Mar 2024",
-    showOnCard: true,
-    actions: 1,
-  },
-  {
-    type: "Work History",
-    badge: "Not Verified",
-    badgeColor: "bg-red-100 text-red-700",
-    organization: "Marketing Associate",
-    subtitle: "BlueBridge Systems",
-    period: "Jan 2023 – Mar 2024",
-    showOnCard: false,
-    actions: 1,
-  },
-  {
-    type: "Recommendation",
-    badge: "Verified/Fully",
-    badgeColor: "bg-green-100 text-green-700",
-    organization: "Mr Akinola Jacob",
-    subtitle: "Supervisor (Nestle)",
-    period: "2021 – 2025",
-    showOnCard: false,
-    actions: 3,
-  },
-];
+import { referencesService } from "@/lib/services/referencesService";
 
 export default function CareerRepositoryPage() {
   const [activeTab, setActiveTab] = useState<"references" | "lpi">("references");
   const [pageMode, setPageMode] = useState<PageMode>("dashboard");
   const [lpiMode, setLpiMode] = useState<LPIMode>("reports");
   const [activeModal, setActiveModal] = useState<RepositoryType | null>(null);
+  const [repositories, setRepositories] = useState<RepositoryItem[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const refs = await referencesService.getMyReferences();
+        // Map references to RepositoryItem format
+        const mappedRefs: RepositoryItem[] = refs.map((ref: any) => ({
+          type: ref.type as RepositoryType,
+          badge: ref.status === 'verified' ? 'Verified/Fully' : ref.status === 'pending' ? 'Pending' : 'Processed',
+          badgeColor: ref.status === 'verified' ? 'bg-green-100 text-green-700' : ref.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700',
+          organization: ref.issuerName || 'Unknown',
+          subtitle: ref.title,
+          period: ref.startDate && ref.endDate ? `${ref.startDate} - ${ref.endDate}` : 'Ongoing',
+          showOnCard: true,
+          actions: 3,
+        }));
+        // Add profile-related items if any
+        setRepositories(mappedRefs);
+      } catch (error) {
+        console.error('Failed to fetch repository data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="flex-1 bg-gray-50 p-4 sm:p-6 md:p-8">

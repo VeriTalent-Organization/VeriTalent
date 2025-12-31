@@ -13,8 +13,8 @@ export default function RecommendationModal({ isOpen, onClose, recommendation }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center p-4 z-[10000]">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-full sm:max-w-2xl max-h-[100dvh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 sticky top-0 bg-white">
           <h2 className="text-xl font-semibold text-gray-900">Recommendation</h2>

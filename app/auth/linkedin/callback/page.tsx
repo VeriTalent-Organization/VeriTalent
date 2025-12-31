@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/reuseables/text';
+import { useCreateUserStore } from '@/lib/stores/form_submission_store';
+import { userTypes } from '@/types/user_type';
 
 export const dynamic = 'force-dynamic';
 
@@ -85,8 +87,10 @@ function LinkedInCallbackContent() {
         // Handle the LinkedIn authentication callback (reuse Google handler as it's the same process)
         await authService.handleGoogleCallback(token);
 
-        // Redirect to dashboard
-        router.replace('/dashboard');
+        // Redirect to role-specific dashboard
+        const { user } = useCreateUserStore.getState();
+        const dashboardRoute = user.user_type === userTypes.TALENT ? '/dashboard/ai-card' : '/dashboard';
+        router.replace(dashboardRoute);
       } catch (err) {
         console.error('LinkedIn OAuth callback error:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to complete LinkedIn authentication. Please try again.';

@@ -8,7 +8,7 @@ interface WorkHistoryModalProps {
 const WorkHistoryModal = ({ onClose }: WorkHistoryModalProps) => {
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end p-4 justify-center">
+    <div className="fixed inset-0 z-[10000] bg-black/60 flex items-end p-4 justify-center">
       {/* Backdrop click closes modal */}
       <div
         className="absolute inset-0"
@@ -17,7 +17,7 @@ const WorkHistoryModal = ({ onClose }: WorkHistoryModalProps) => {
 
       {/* Modal Container */}
       <div
-        className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[87vh] overflow-y-auto"
+        className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[100dvh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}

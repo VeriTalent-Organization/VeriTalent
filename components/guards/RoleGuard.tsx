@@ -17,25 +17,33 @@ interface RoleGuardProps {
  * Redirects users to appropriate page if they don't have the required role.
  */
 export default function RoleGuard({ allowedRoles, children, redirectTo }: RoleGuardProps) {
-  const { user } = useCreateUserStore();
+  const { user, _hasHydrated } = useCreateUserStore();
   const router = useRouter();
 
   useEffect(() => {
+    // Wait for store to hydrate before checking role
+    if (!_hasHydrated) {
+      console.log('[RoleGuard] Waiting for hydration');
+      return;
+    }
+
     if (!user?.active_role) {
+      console.log('[RoleGuard] No active role, redirecting to dashboard');
       // No active role, redirect to dashboard
       router.push('/dashboard');
       return;
     }
 
     if (!allowedRoles.includes(user.active_role)) {
+      console.log('[RoleGuard] User role not allowed:', { active_role: user.active_role, allowedRoles });
       // User doesn't have permission, redirect based on their role
       const destination = redirectTo || getDefaultRouteForRole(user.active_role);
       router.push(destination);
     }
-  }, [user?.active_role, allowedRoles, router, redirectTo]);
+  }, [user?.active_role, allowedRoles, router, redirectTo, _hasHydrated]);
 
-  // Don't render children if user doesn't have the required role
-  if (!user?.active_role || !allowedRoles.includes(user.active_role)) {
+  // Don't render children if user doesn't have the required role or not hydrated
+  if (!_hasHydrated || !user?.active_role || !allowedRoles.includes(user.active_role)) {
     return null;
   }
 

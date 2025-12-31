@@ -3,7 +3,7 @@ import { Download, ChevronDown, Eye, FileCheck, RefreshCw, Edit } from 'lucide-r
 import { TalentCardData, VeriTalentCardProps } from '@/types/dashboard';
 import { userTypes } from '@/types/user_type';
 import { profilesService } from '@/lib/services/profilesService';
-import { usersService } from '@/lib/services/usersService';
+// import { usersService } from '@/lib/services/usersService';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
 
 const defaultTalentData: TalentCardData = {
@@ -114,12 +114,28 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
       }
     };
     
+    console.log('[VeriTalentCard] useEffect triggered:', { 
+      userType, 
+      full_name: user.full_name, 
+      veritalent_id: user.veritalent_id,
+      profile_fetched: user.profile_fetched,
+      condition: user.profile_fetched || (user.full_name && user.veritalent_id)
+    });
+    
     if (userType === userTypes.TALENT) {
-      loadProfile();
+      // Load profile if we have user data (either from profile_fetched or basic login data)
+      if (user.profile_fetched || (user.full_name && user.veritalent_id)) {
+        console.log('[VeriTalentCard] Loading profile...');
+        loadProfile();
+      } else {
+        // Still waiting for user data to be hydrated
+        console.log('[VeriTalentCard] Waiting for user data...');
+        setLoading(true);
+      }
     } else {
       setLoading(false);
     }
-  }, [userType, user.full_name, user.veritalent_id, user.location, user.country, user.linkedin_connected, user.talentProfile]);
+  }, [userType, user.full_name, user.veritalent_id, user.location, user.country, user.linkedin_connected, user.talentProfile, user.profile_fetched]);
 
   const handleSaveProfile = async () => {
     try {
@@ -566,8 +582,8 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
       
       {/* Edit Modal */}
       {isEditModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-10000 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-dvh overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Edit Career Profile</h2>
               <button onClick={() => setIsEditModalOpen(false)} className="text-gray-500 hover:text-gray-700">

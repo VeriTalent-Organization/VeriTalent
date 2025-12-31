@@ -23,16 +23,14 @@ const RolePickerStep: React.FC<RolePickerStepProps> & {
     // If user is null, this will create the initial user object
     updateUser({ user_type: type })
 
-    // Optional: Auto-advance after selection (great UX!)
-    if (onNext) {
-      setTimeout(() => onNext(), 300) // Small delay for visual feedback
-    }
+    // Note: Auto-advance removed to ensure explicit confirmation
+    // Users must click Next button to proceed, preventing accidental role selection
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[600px] gap-12 px-4">
       <div className="text-center space-y-6 max-w-2xl">
-        <Text as="h1" variant="Heading" className="text-3xl sm:text-4xl md:text-5xl">
+        <Text as="h1" variant="SubHeadings" className="text-3xl sm:text-4xl md:text-5xl">
           Welcome to <span className="text-brand-primary">VeriTalent!</span>
         </Text>
 

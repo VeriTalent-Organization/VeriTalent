@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useCreateUserStore, type User } from "@/lib/stores/form_submission_store";
 import { syncTokenToCookie } from "@/lib/utils/cookieUtils";
+import { userTypes } from "@/types/user_type";
 import type { UserMeResponseDto } from "@/lib/services/usersService";
 
 interface StoreHydrationProps {
@@ -11,6 +12,23 @@ interface StoreHydrationProps {
 
 // Type for talent profile
 type TalentProfile = NonNullable<User['talentProfile']>;
+
+/**
+ * Map backend role to userTypes enum
+ */
+function mapRoleToUserType(role: string): userTypes {
+  switch (role) {
+    case 'talent':
+      return userTypes.TALENT;
+    case 'recruiter':
+      return userTypes.INDEPENDENT_RECRUITER;
+    case 'org_admin':
+      return userTypes.ORGANISATION;
+    default:
+      console.warn('[StoreHydration] Unknown role:', role);
+      return userTypes.TALENT; // fallback
+  }
+}
 
 /**
  * Client component that hydrates the Zustand store with server-fetched user data
@@ -24,6 +42,12 @@ export default function StoreHydration({ userData }: StoreHydrationProps) {
     if (!userData) return;
 
     console.log('[StoreHydration] Hydrating store with user data:', userData);
+    console.log('[StoreHydration] activeRole:', userData.activeRole, '→ will update store now');
+
+    // Map activeRole to user_type
+    const user_type = userData.activeRole ? mapRoleToUserType(userData.activeRole) : undefined;
+    
+    console.log('[StoreHydration] Mapped to user_type:', user_type);
 
     // Map backend response to store format
     updateUser({
@@ -34,6 +58,7 @@ export default function StoreHydration({ userData }: StoreHydrationProps) {
       email: userData.email,
       roles: userData.roles,
       active_role: userData.activeRole,
+      user_type, // ← Add this mapping
       location: userData.location,
       linked_emails: userData.onboarding?.linked_emails || [],
       

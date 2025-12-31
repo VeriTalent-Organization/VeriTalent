@@ -1,14 +1,16 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { FormData } from '@/types/dashboard';
+import { Spinner } from '@/components/ui/spinner';
 
 interface WorkReferenceFormProps {
   formData: FormData;
   onFormChange: (field: keyof FormData, value: string) => void;
   onSubmit: () => void;
+  isSubmitting?: boolean;
 }
 
-export default function WorkReferenceForm({ formData, onFormChange, onSubmit }: WorkReferenceFormProps) {
+export default function WorkReferenceForm({ formData, onFormChange, onSubmit, isSubmitting = false }: WorkReferenceFormProps) {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -139,8 +141,10 @@ export default function WorkReferenceForm({ formData, onFormChange, onSubmit }: 
       <div className="flex justify-end pt-4">
         <button
           onClick={onSubmit}
-          className="w-full sm:w-auto bg-brand-primary hover:bg-cyan-700 text-white font-medium py-3 px-8 rounded-lg transition"
+          disabled={isSubmitting}
+          className="w-full sm:w-auto bg-brand-primary hover:bg-cyan-700 text-white font-medium py-3 px-8 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
+          {isSubmitting && <Spinner className="text-white" />}
           Submit for Reference
         </button>
       </div>

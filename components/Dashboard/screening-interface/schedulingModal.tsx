@@ -51,8 +51,8 @@ export default function SchedulingModal({ onClose }: SchedulingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-end justify-center p-4 pb-1 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-end justify-center p-4 pb-1 z-[10000]">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[100dvh] overflow-y-auto">
         {/* Header */}
         <div className="flex z-10 bg-white items-center justify-between p-6 border-b sticky top-0 border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-900">Scheduling</h2>

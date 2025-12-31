@@ -71,10 +71,12 @@ export interface User {
 
 interface UserStore {
   user: User; // Always an object during onboarding and after login
+  _hasHydrated: boolean; // Track if store has hydrated from localStorage
   setUser: (data: Partial<User> | User) => void;
   updateUser: (data: Partial<User>) => void;
   logout: () => void;
   resetForm: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 const initialFormState: User = {
@@ -101,6 +103,7 @@ export const useCreateUserStore = create<UserStore>()(
   persist(
     (set) => ({
       user: initialFormState,
+      _hasHydrated: false,
       setUser: (data) =>
         set(() => ({
           user: { ...initialFormState, ...(data as Partial<User>) },
@@ -127,9 +130,17 @@ export const useCreateUserStore = create<UserStore>()(
             email: state.user.email,
           },
         })),
+      setHasHydrated: (state: boolean) => {
+        set({
+          _hasHydrated: state,
+        });
+      },
     }),
     {
       name: "veritalent-user-storage",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       // ✅ Correct storage type for TypeScript
       storage: {
         getItem: (name: string) => {

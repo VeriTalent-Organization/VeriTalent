@@ -139,13 +139,20 @@ export const authService = {
     const loginRes = await apiClient.post('/auth/login', data);
     console.log('Full login response:', JSON.stringify(loginRes.data, null, 2));
     
-    const token = loginRes?.data?.data?.access_token;
-    const loginUserData = loginRes?.data?.data?.user;
+    // Try multiple possible locations for the token
+    const token = loginRes?.data?.data?.access_token || 
+                  loginRes?.data?.access_token || 
+                  loginRes?.data?.token ||
+                  loginRes?.data?.data?.token;
+    const loginUserData = loginRes?.data?.data?.user || 
+                          loginRes?.data?.user || 
+                          loginRes?.data?.data;
 
     console.log('Extracted token:', token);
     console.log('Extracted loginUserData:', loginUserData);
 
     if (!token) {
+      console.error('Token extraction failed. Response structure:', loginRes.data);
       throw new Error('No access token returned from login');
     }
 
@@ -212,9 +219,12 @@ export const authService = {
      */
     useCreateUserStore.getState().updateUser({
       user_type,
+      active_role: activeRole as 'talent' | 'recruiter' | 'org_admin',
       available_roles: availableRoles as ('talent' | 'recruiter' | 'org_admin')[],
       full_name: me?.fullName || me?.full_name,
       email: me?.primaryEmail || me?.email,
+      veritalent_id: me?.veritalentId || me?.veritalent_id,
+      location: me?.location,
     });
 
     /**

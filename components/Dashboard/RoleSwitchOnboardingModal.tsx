@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
 import { userTypes } from '@/types/user_type';
 import { X } from 'lucide-react';
@@ -12,6 +12,7 @@ import { authService } from '@/lib/services/authService';
 import { usersService } from '@/lib/services/usersService';
 import { organizationsService } from '@/lib/services/organizationsService';
 import { useRouter } from 'next/navigation';
+import { Spinner } from '@/components/ui/spinner';
 
 interface RoleSwitchOnboardingModalProps {
   isOpen: boolean;
@@ -31,6 +32,18 @@ export default function RoleSwitchOnboardingModal({
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Body scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -207,8 +220,13 @@ export default function RoleSwitchOnboardingModal({
   // If switching to talent (no steps needed), complete immediately
   if (steps.length === 0) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+      <div 
+        className="fixed inset-0 z-10000 flex items-center justify-center bg-black/50 overflow-hidden"
+        onClick={onClose}
+        onTouchMove={(e) => e.preventDefault()}
+        onWheel={(e) => e.preventDefault()}
+      >
+        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6 max-h-[100dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
           <div className="flex justify-between items-center mb-4">
             <Text variant="Heading" as="h2" className="text-xl">
               Switch to {getRoleLabel()}
@@ -313,8 +331,9 @@ export default function RoleSwitchOnboardingModal({
                 }
               }}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center"
             >
+              {isSubmitting && <Spinner className="text-white" />}
               {isSubmitting ? 'Adding Role...' : 'Confirm & Add Role'}
             </button>
           </div>
@@ -324,12 +343,17 @@ export default function RoleSwitchOnboardingModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full my-8">
+    <div 
+      className="fixed inset-0 z-10000 flex items-center justify-center max-h-dvh bg-black/50 p-4 overflow-hidden"
+      onClick={onClose}
+      onTouchMove={(e) => e.preventDefault()}
+      onWheel={(e) => e.preventDefault()}
+    >
+      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full my-8 max-h-[100dvh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div>
-            <Text variant="Heading" as="h2" className="text-xl">
+            <Text variant="SubHeadings" as="h2" className="text-xl">
               Complete Your {getRoleLabel()} Profile
             </Text>
             <Text variant="SubText" className="text-sm text-gray-600 mt-1">
@@ -368,6 +392,7 @@ export default function RoleSwitchOnboardingModal({
               onNext={handleNext}
               onBack={currentStep > 0 ? handleBack : undefined}
               isFinalStep={currentStep === steps.length - 1}
+              inModal={true}
             />
           )}
         </div>
@@ -386,8 +411,9 @@ export default function RoleSwitchOnboardingModal({
               type="button"
               onClick={handleNext}
               disabled={isSubmitting}
-              className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition disabled:opacity-50"
+              className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
+              {isSubmitting && <Spinner className="text-white" />}
               {isSubmitting
                 ? 'Saving...'
                 : currentStep === steps.length - 1

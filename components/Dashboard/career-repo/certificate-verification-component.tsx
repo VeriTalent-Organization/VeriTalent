@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Upload } from 'lucide-react';
 import FormComponent from '@/components/forms/form';
+import { Spinner } from '@/components/ui/spinner';
 
 interface CertificateVerificationProps {
   onSubmit?: (data: CertificateVerificationData) => void;
@@ -28,6 +29,7 @@ export default function CertificateVerificationComponent({ onSubmit, onCancel }:
   const [issuerOption, setIssuerOption] = useState<'search' | 'not-found'>('search');
   const [issuerSearch, setIssuerSearch] = useState('');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const organizationFields = [
     {
@@ -114,15 +116,24 @@ export default function CertificateVerificationComponent({ onSubmit, onCancel }:
     }
   };
 
-  const handleFormSubmit = (data: Record<string, string>) => {
-    const fullData: CertificateVerificationData = {
-      ...data,
-      issuerOption,
-      issuerSearch,
-      uploadedFile,
-    } as CertificateVerificationData;
-    
-    onSubmit?.(fullData);
+  const handleFormSubmit = async (data: Record<string, string>) => {
+    setIsSubmitting(true);
+    try {
+      const fullData: CertificateVerificationData = {
+        ...data,
+        issuerOption,
+        issuerSearch,
+        uploadedFile,
+      } as CertificateVerificationData;
+      
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onSubmit?.(fullData);
+    } catch (error) {
+      console.error('Failed to submit certificate verification:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -231,7 +242,8 @@ export default function CertificateVerificationComponent({ onSubmit, onCancel }:
         {onCancel && (
           <button
             onClick={onCancel}
-            className="px-6 py-2.5 text-gray-700 hover:text-gray-900 transition-colors font-medium flex items-center gap-2"
+            disabled={isSubmitting}
+            className="px-6 py-2.5 text-gray-700 hover:text-gray-900 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             ← Back
           </button>
@@ -242,8 +254,10 @@ export default function CertificateVerificationComponent({ onSubmit, onCancel }:
             // In a real implementation, you'd need to use a form context or refs
             handleFormSubmit({});
           }}
-          className="px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+          disabled={isSubmitting}
+          className="px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
+          {isSubmitting && <Spinner className="text-white" />}
           Submit for Verification
         </button>
       </div>

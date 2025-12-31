@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Briefcase, Users, Eye, Calendar, MapPin, Clock, ExternalLink } from 'lucide-react';
 import { jobsService } from '@/lib/services/jobsService';
 import { ExistingJob } from '@/types/dashboard';
+import { formatDate } from '@/lib/utils';
 
 export default function MyPostedJobs() {
   const [jobs, setJobs] = useState<ExistingJob[]>([]);
@@ -42,15 +43,6 @@ export default function MyPostedJobs() {
       default:
         return 'bg-blue-100 text-blue-800';
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
   };
 
   if (loading) {

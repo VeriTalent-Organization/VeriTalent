@@ -19,6 +19,7 @@ import { useCreateUserStore } from '@/lib/stores/form_submission_store'
 import { userTypes } from '@/types/user_type'
 import { authService, RegisterDto } from '@/lib/services/authService'
 import { Text } from '@/components/reuseables/text'
+import { Spinner } from '@/components/ui/spinner'
 
 type OnboardingStepProps = {
   onNext: () => void
@@ -32,17 +33,24 @@ type OnboardingStepComponent = React.FC<OnboardingStepProps> & {
 
 const Home = () => {
   const router = useRouter()
-  const { user } = useCreateUserStore()
+  const { user, _hasHydrated } = useCreateUserStore()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const hasRedirected = React.useRef(false)
 
-  // Redirect already-authenticated users
+  // Redirect already-authenticated users (wait for hydration AND active_role from server)
   useEffect(() => {
-    if (user?.token) {
-      router.replace('/dashboard')
+    if (!_hasHydrated) return; // Wait for store to hydrate
+    
+    // Wait for both token AND active_role (which comes from /users/me on server)
+    if (user?.token && user?.active_role && !hasRedirected.current) {
+      hasRedirected.current = true;
+      const dashboardRoute = user.active_role === 'talent' ? '/dashboard/ai-card' : '/dashboard';
+      console.log('[app/page] Redirecting authenticated user to:', dashboardRoute, { active_role: user.active_role });
+      router.replace(dashboardRoute);
     }
-  }, [user?.token, router])
+  }, [user?.token, user?.active_role, _hasHydrated, router])
 
   // Always show login as first step
   const [showLogin, setShowLogin] = useState(true)
@@ -73,6 +81,12 @@ const Home = () => {
 
   // Handle next step / registration
   const goNext = async () => {
+    // Validation: If on role picker step (step 0), ensure role is selected
+    if (currentStep === 0 && !user?.user_type) {
+      setError('Please select your role to continue.');
+      return;
+    }
+
     const isFinalStep = currentStep === steps.length - 1
 
     if (!isFinalStep) {
@@ -84,6 +98,20 @@ const Home = () => {
     setError(null)
 
     try {
+      // Validation: Ensure user has selected a valid role before registration
+      if (!user?.user_type) {
+        setError('Please select your role before continuing.');
+        setCurrentStep(0); // Go back to role picker
+        return;
+      }
+
+      // Validation: Ensure role is one of the valid types
+      if (![userTypes.TALENT, userTypes.INDEPENDENT_RECRUITER, userTypes.ORGANISATION].includes(user.user_type)) {
+        setError('Invalid role selected. Please try again.');
+        setCurrentStep(0);
+        return;
+      }
+
       const registerData: RegisterDto = {
         primaryEmail: user.email,
         password: user.password || '',
@@ -139,11 +167,8 @@ const Home = () => {
       const { token } = await authService.register(registerData)
 
       // Note: authService.register already updates the store with token and user data
-      // Just ensure token is set and redirect immediately
+      // The useEffect will detect the token and handle redirect
       localStorage.setItem('hasEverRegistered', 'true')
-
-      // Redirect to dashboard
-      router.push('/dashboard')
     } catch (err: unknown) {
       console.error('Registration error:', err)
       const message = (err as { message?: string })?.message || 'Registration failed. Please try again.'
@@ -167,7 +192,6 @@ const Home = () => {
 
         <div className="min-h-[400px] flex items-center justify-center">
           <LoginPage
-            onLoginSuccess={() => router.push('/dashboard')}
             onShowRegister={() => setShowLogin(false)}
           />
         </div>
@@ -233,8 +257,8 @@ const Home = () => {
         <div className="flex justify-between mt-10 mb-6">
           <button
             onClick={goBack}
-            disabled={currentStep === 0}
-            className="px-6 py-3 rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+            disabled={currentStep === 0 || isSubmitting}
+            className="px-6 py-3 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
             Back
           </button>
@@ -242,8 +266,9 @@ const Home = () => {
           <button
             onClick={goNext}
             disabled={isSubmitting}
-            className="px-6 py-3 rounded-lg bg-brand-primary text-white disabled:opacity-40 hover:bg-brand-primary/90 transition-colors"
+            className="px-6 py-3 rounded-lg bg-brand-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-primary/90 transition-colors flex items-center gap-2 justify-center"
           >
+            {isSubmitting && <Spinner className="text-white" />}
             {isSubmitting ? 'Creating account...' : isFinalStep ? 'Finish' : 'Next'}
           </button>
         </div>

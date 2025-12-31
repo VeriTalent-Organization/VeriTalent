@@ -1,47 +1,57 @@
-import { X } from 'lucide-react';
-import React from 'react'
-// import RecommendationModal from '../screening-interface/recommendationModal';
+import React, { useState } from 'react'
+import { Spinner } from '@/components/ui/spinner';
+import Modal from '@/components/ui/modal';
 
 interface RecommendationModalProps {
   onClose: () => void;
 }
 
 const RecommendationModal = ({ onClose }: RecommendationModalProps) => {
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Share recommendation");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Failed to share:", error);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Download recommendation");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Failed to download:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end p-4 justify-center">
-      {/* Backdrop click closes modal */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-      />
-
-      {/* Modal Container */}
-      <div
-        className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[87vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between sticky top-0 p-6 border-b">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Recommendation</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Recommendation"
+      size="lg"
+      position="bottom"
+    >
+      {/* Modal Body */}
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Status Badge */}
+        <div className="flex justify-end">
+          <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-sm rounded-full font-medium">
+            Verified Fully
+          </span>
         </div>
-
-        {/* Modal Body */}
-        <div className="p-6 space-y-6">
-          {/* Status Badge */}
-          <div className="flex justify-end">
-            <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-sm rounded-full font-medium">
-              Verified Fully
-            </span>
-          </div>
 
           {/* Issuer */}
           <div>
@@ -96,15 +106,24 @@ const RecommendationModal = ({ onClose }: RecommendationModalProps) => {
 
         {/* Modal Footer */}
         <div className="flex gap-3 p-6 border-t sticky bottom-0 bg-gray-50">
-          <button className="flex-1 px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
+          <button 
+            onClick={handleShare}
+            disabled={isSharing}
+            className="flex-1 px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isSharing && <Spinner className="text-white" />}
             Share
           </button>
-          <button className="flex-1 px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
+          <button 
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="flex-1 px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isDownloading && <Spinner className="text-white" />}
             Download
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

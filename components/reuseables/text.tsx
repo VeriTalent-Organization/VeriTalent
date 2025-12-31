@@ -1,6 +1,5 @@
 import { TextConfigurations } from "@/lib/configs/text-configs";
-
-type TextVariant = keyof typeof TextConfigurations;
+import { TextVariant } from "@/types/dashboard";
 
 interface TextProps {
   variant?: TextVariant;

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Video } from 'lucide-react';
 
-export default function SchedulingModal() {
+interface SchedulingModalProps {
+  onClose: () => void;
+}
+
+export default function SchedulingModal({ onClose }: SchedulingModalProps) {
   const [startDate, setStartDate] = useState('April 20, 2025');
   const [startTime, setStartTime] = useState('01:15am');
   const [endTime, setEndTime] = useState('01:45am');
@@ -47,47 +51,47 @@ export default function SchedulingModal() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-end justify-center p-4 pb-1 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b sticky top-0 border-gray-200">
+        <div className="flex z-10 bg-white items-center justify-between p-6 border-b sticky top-0 border-gray-200">
           <h2 className="text-2xl font-semibold text-gray-900">Scheduling</h2>
-          <button className="text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="p-6">
           {/* Date and Time Selection */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
             <input
               type="text"
               value={startDate}
               readOnly
-              className="px-4 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-2 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-auto min-w-[140px]"
             />
             <input
               type="text"
               value={startTime}
               readOnly
-              className="px-4 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-2 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-auto min-w-[120px]"
             />
-            <span className="text-gray-500 text-sm">to</span>
+            <span className="text-gray-500 text-sm whitespace-nowrap">to</span>
             <input
               type="text"
               value={endTime}
               readOnly
-              className="px-4 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-2 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-auto min-w-[120px]"
             />
             <input
               type="text"
               value={endDate}
               readOnly
-              className="px-4 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="px-2 py-2.5 border border-gray-300 rounded-lg text-blue-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full sm:w-auto min-w-[140px]"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Calendar */}
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -258,11 +262,12 @@ export default function SchedulingModal() {
             />
           </div>
 
-          {/* Action Button */}
-          <button className="w-full px-6 py-3 sticky bottom-0 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Schedule Interviews
-          </button>
+          
         </div>
+        {/* Action Button */}
+        <button onClick={onClose} className="max-w-2xl ml-6 mb-6 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+          Schedule Interviews
+        </button>
       </div>
     </div>
   );

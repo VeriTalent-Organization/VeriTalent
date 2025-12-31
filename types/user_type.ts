@@ -1,5 +1,5 @@
 export enum userTypes{
     TALENT = "talent",
-    INDEPENT_RECRUITER = 'indepent_recruiter',
+    INDEPENDENT_RECRUITER = 'indepent_recruiter',
     ORGANISATION= 'organisation'
 }

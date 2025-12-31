@@ -15,7 +15,7 @@ export default function NewIssuanceView({ formData, onFormChange, onSubmit }: Ne
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">New Issuance</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Direct Issuance</h2>
         <div className="text-left sm:text-right">
           <button className="w-full sm:w-auto bg-brand-primary hover:bg-cyan-700 text-white font-medium py-2 px-6 rounded-lg transition">
             Bulk Issuance

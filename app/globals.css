@@ -131,3 +131,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes arrowMove {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateX(6px);
+    opacity: 1;
+  }
+}
+
+.animate-arrow {
+  animation: arrowMove 1.2s ease-in-out infinite;
+}
+

@@ -1,8 +1,19 @@
-import VeriTalentAICardFull from '@/components/molecules/vritalentAiTalentUser'
-import React from 'react'
+"use client";
+import { VeriTalentCard } from '@/components/molecules/VeritalentCard';
+import { useCreateUserStore } from '@/lib/stores/form_submission_store';
+import RoleGuard from '@/components/guards/RoleGuard';
 
-const page = () => {
-  return <VeriTalentAICardFull/>
-}
+const AICardPage = () => {
+  const { user } = useCreateUserStore();
 
-export default page
+  return (
+    <RoleGuard allowedRoles={['talent']}>
+      <VeriTalentCard
+        userType={user.user_type}
+        isVerified={true} // You can implement verification logic here
+      />
+    </RoleGuard>
+  );
+};
+
+export default AICardPage;

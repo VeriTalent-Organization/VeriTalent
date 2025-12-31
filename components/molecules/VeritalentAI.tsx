@@ -13,7 +13,7 @@ export default function VeritalentAITab() {
   const getAISteps = () => {
     const baseSteps = [
       {
-        component: (props: any) => (
+        component: (props: { onNext?: () => void; onBack?: () => void; canBack?: boolean }) => (
           <CVUploadJobContext
             value={uploadMode!}
             onModeChange={setUploadMode}

@@ -1,14 +1,30 @@
 "use client";
-import React, { useState } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Search } from 'lucide-react';
+import { jobsService } from '@/lib/services/jobsService';
+import SchedulingModal from './schedulingModal';
+import CandidateSelectionModal from './candidateSelectionModal';
+import BulkInterviewScheduleCompact from './bulkInterviewScheduleModal';
 
 interface JobData {
-  jobId: string;
-  jobTitle: string;
-  companyName: string;
-  applicationsReceived: number;
-  noInterviewed: number;
+  id: string;
+  title: string;
+  description?: string;
+  location?: string;
+  applicationsReceived?: number;
+  noInterviewed?: number;
+  // Add other fields as needed
 }
+
+type ShortlistCandidate = { id: string; name: string; fitScore: number; status?: 'shortlisted' | 'scheduled' | 'rejected' };
+type PostInterviewCandidate = { id: string; name: string; fitScore: number; interviewRating: number; status?: 'pending' | 'rejected' };
+
+type PendingAction = {
+  type: 'schedule' | 'reject' | 'bulk' | 'download';
+  candidateId?: string;
+  candidateName?: string;
+  list: 'shortlist' | 'post' | 'bulk';
+};
 
 // Mock VeriTalent AI Card component
 function VeriTalentAICard() {
@@ -33,31 +49,112 @@ export default function DashboardContent() {
   const [jobId, setJobId] = useState('');
   const [jobData, setJobData] = useState<JobData | null>(null);
   const [viewMode, setViewMode] = useState<"dashboard" | "ai-card">("dashboard");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sortOption, setSortOption] = useState<'fit-desc' | 'name-asc'>('fit-desc');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'rejected'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [shortlistCandidates, setShortlistCandidates] = useState<ShortlistCandidate[]>([
+    { id: '1', name: 'Sam Sulek', fitScore: 60, status: 'shortlisted' },
+    { id: '2', name: 'Pariola Ajayi', fitScore: 57, status: 'shortlisted' },
+    { id: '3', name: 'Peace Olayemi', fitScore: 40, status: 'shortlisted' }
+  ]);
+  const [postInterviewCandidates, setPostInterviewCandidates] = useState<PostInterviewCandidate[]>([
+    { id: '1', name: 'Sam Sulek', fitScore: 60, interviewRating: 72, status: 'pending' },
+    { id: '2', name: 'Pariola Ajayi', fitScore: 57, interviewRating: 84, status: 'pending' },
+    { id: '3', name: 'Peace Olayemi', fitScore: 40, interviewRating: 55, status: 'pending' }
+  ]);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [showScheduling, setShowScheduling] = useState(false);
+  const [showCandidateSelection, setShowCandidateSelection] = useState(false);
+  const [showBulkSchedule, setShowBulkSchedule] = useState(false);
 
-  // Sample data for when job is fetched
-  const sampleJobData = {
-    jobId: 'REQ-2025-SWE-001',
-    jobTitle: 'Software Engineer',
-    companyName: 'TechCorp',
-    applicationsReceived: 245,
-    noInterviewed: 30
+  const shortlistView = useMemo(() => {
+    const base = shortlistCandidates
+      .filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const sorted = [...base].sort((a, b) => {
+      if (sortOption === 'fit-desc') return b.fitScore - a.fitScore;
+      return a.name.localeCompare(b.name);
+    });
+
+    return sorted;
+  }, [shortlistCandidates, searchTerm, sortOption]);
+
+  const postInterviewView = useMemo(() => {
+    const filtered = postInterviewCandidates
+      .filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .filter((c) => statusFilter === 'all' ? true : c.status === statusFilter);
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortOption === 'fit-desc') return b.fitScore - a.fitScore;
+      return a.name.localeCompare(b.name);
+    });
+
+    return sorted;
+  }, [postInterviewCandidates, searchTerm, sortOption, statusFilter]);
+
+  const openAction = (action: PendingAction) => {
+    setPendingAction(action);
+    if (action.type === 'schedule') {
+      setShowBulkSchedule(true);
+    }
+    if (action.type === 'bulk') {
+      setShowCandidateSelection(true);
+    }
   };
 
-  const shortlistCandidates = [
-    { name: 'Sam Sulek', fitScore: '60%' },
-    { name: 'Pariola Ajayi', fitScore: '57%' },
-    { name: 'Peace Olayemi', fitScore: '40%' }
-  ];
+  const handleConfirmAction = () => {
+    if (!pendingAction) return;
 
-  const postInterviewCandidates = [
-    { name: 'Sam Sulek', fitScore: '60%', interviewRating: '72%' },
-    { name: 'Pariola Ajayi', fitScore: '57%', interviewRating: '84%' },
-    { name: 'Peace Olayemi', fitScore: '40%', interviewRating: '55%' }
-  ];
+    if (pendingAction.type === 'reject') {
+      if (pendingAction.list === 'shortlist' && pendingAction.candidateId) {
+        setShortlistCandidates((prev) => prev.filter((c) => c.id !== pendingAction.candidateId));
+      }
+      if (pendingAction.list === 'post' && pendingAction.candidateId) {
+        setPostInterviewCandidates((prev) => prev.map((c) => c.id === pendingAction.candidateId ? { ...c, status: 'rejected' } : c));
+      }
+      setActionMessage(`${pendingAction.candidateName || 'Candidate'} rejected`);
+    }
 
-  const handleFetchResult = () => {
-    setJobData(sampleJobData);
-    setJobId(sampleJobData.jobId);
+    if (pendingAction.type === 'schedule' && pendingAction.candidateId) {
+      setShortlistCandidates((prev) => prev.map((c) => c.id === pendingAction.candidateId ? { ...c, status: 'scheduled' } : c));
+      setActionMessage(`Interview scheduled for ${pendingAction.candidateName || 'candidate'}`);
+    }
+
+    if (pendingAction.type === 'bulk') {
+      setActionMessage('Bulk action applied to shortlisted candidates');
+    }
+
+    if (pendingAction.type === 'download') {
+      setActionMessage(`Download started for ${pendingAction.candidateName || 'candidate'}`);
+    }
+
+    setPendingAction(null);
+  };
+
+  const handleFetchResult = async () => {
+    if (!jobId.trim()) return;
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const job = await jobsService.getJob(jobId);
+      setJobData({
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        location: job.location,
+        applicationsReceived: job.applicationsReceived || 0,
+        noInterviewed: job.noInterviewed || 0,
+      });
+    } catch (err) {
+      console.error('Failed to fetch job:', err);
+      setError('Failed to fetch job data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (viewMode === "ai-card") {
@@ -67,6 +164,24 @@ export default function DashboardContent() {
   return (
     <div className="flex-1 bg-gray-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
+        {showScheduling && (
+          <SchedulingModal onClose={() => {
+            setShowScheduling(false);
+            setPendingAction(null);
+          }} />
+        )}
+        {showBulkSchedule && (
+          <BulkInterviewScheduleCompact onClose={() => {
+            setShowBulkSchedule(false);
+            setPendingAction(null);
+          }} />
+        )}
+        {showCandidateSelection && (
+          <CandidateSelectionModal onClose={() => {
+            setShowCandidateSelection(false);
+            setShowScheduling(true);
+          }} />
+        )}
         {/* Job ID Section */}
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -82,11 +197,13 @@ export default function DashboardContent() {
             />
             <button
               onClick={handleFetchResult}
-              className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+              disabled={loading}
+              className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 transition-colors font-medium"
             >
-              Fetch Result
+              {loading ? 'Fetching...' : 'Fetch Result'}
             </button>
           </div>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </div>
 
         {/* Job Details Card */}
@@ -97,15 +214,15 @@ export default function DashboardContent() {
               <label className="block text-sm text-gray-500 mb-1">Job Title</label>
               <div className="h-10 bg-gray-50 rounded border border-gray-200 flex items-center px-3">
                 {jobData ? (
-                  <span className="text-gray-700">{jobData.jobTitle}</span>
+                  <span className="text-gray-700">{jobData.title}</span>
                 ) : null}
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-500 mb-1">Company Name</label>
+              <label className="block text-sm text-gray-500 mb-1">Location</label>
               <div className="h-10 bg-gray-50 rounded border border-gray-200 flex items-center px-3">
                 {jobData ? (
-                  <span className="text-gray-700">{jobData.companyName}</span>
+                  <span className="text-gray-700">{jobData.location}</span>
                 ) : null}
               </div>
             </div>
@@ -158,27 +275,43 @@ export default function DashboardContent() {
           <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="relative w-full sm:w-auto">
-                <button className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between sm:justify-center gap-2 sm:min-w-[140px]">
-                  Sort by
-                  <ChevronDown className="w-4 h-4" />
-                </button>
+                <label className="sr-only">Sort candidates</label>
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value as typeof sortOption)}
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                >
+                  <option value="fit-desc">Sort by Fit Score</option>
+                  <option value="name-asc">Sort by Name (A-Z)</option>
+                </select>
               </div>
               <div className="relative w-full sm:w-auto">
-                <button className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between sm:justify-center gap-2 sm:min-w-40">
-                  Filter by Status
-                  <ChevronDown className="w-4 h-4" />
-                </button>
+                <label className="sr-only">Filter by status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="rejected">Rejected</option>
+                </select>
               </div>
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
                 />
               </div>
               {activeTab === 'shortlist' && (
-                <button className="w-full sm:w-auto px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium text-sm">
+                <button
+                  onClick={() => openAction({ type: 'bulk', list: 'bulk' })}
+                  className="w-full sm:w-auto px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium text-sm"
+                >
                   Bulk Actions
                 </button>
               )}
@@ -208,21 +341,27 @@ export default function DashboardContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {shortlistCandidates.map((candidate, index) => (
-                      <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                    {shortlistView.map((candidate) => (
+                      <tr key={candidate.id} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="px-6 py-4 text-sm text-gray-700">
                           {candidate.name}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-700">
-                          {candidate.fitScore}
+                          {candidate.fitScore}%
                         </td>
                         <td className="px-6 py-4">
-                          <button className="text-sm text-brand-primary hover:text-cyan-700 font-medium">
+                          <button
+                            onClick={() => setViewMode('ai-card')}
+                            className="text-sm text-brand-primary hover:text-cyan-700 font-medium"
+                          >
                             View
                           </button>
                         </td>
                         <td className="px-6 py-4">
-                          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                          <button
+                            onClick={() => openAction({ type: 'schedule', candidateId: candidate.id, candidateName: candidate.name, list: 'shortlist' })}
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                          >
                             Schedule Interview
                           </button>
                         </td>
@@ -234,19 +373,25 @@ export default function DashboardContent() {
 
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-200">
-                {shortlistCandidates.map((candidate, index) => (
-                  <div key={index} className="p-4 space-y-3">
+                {shortlistView.map((candidate) => (
+                  <div key={candidate.id} className="p-4 space-y-3">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{candidate.name}</p>
-                        <p className="text-xs text-gray-500 mt-1">Fit Score: {candidate.fitScore}</p>
+                        <p className="text-xs text-gray-500 mt-1">Fit Score: {candidate.fitScore}%</p>
                       </div>
                     </div>
                     <div className="flex gap-2 pt-2">
-                      <button className="flex-1 px-3 py-2 text-sm text-brand-primary border border-brand-primary rounded-lg hover:bg-cyan-50 font-medium">
+                      <button
+                        onClick={() => setViewMode('ai-card')}
+                        className="flex-1 px-3 py-2 text-sm text-brand-primary border border-brand-primary rounded-lg hover:bg-cyan-50 font-medium"
+                      >
                         View AI Card
                       </button>
-                      <button className="flex-1 px-3 py-2 text-sm text-white bg-brand-primary rounded-lg hover:bg-cyan-700 font-medium">
+                      <button
+                        onClick={() => openAction({ type: 'schedule', candidateId: candidate.id, candidateName: candidate.name, list: 'shortlist' })}
+                        className="flex-1 px-3 py-2 text-sm text-white bg-brand-primary rounded-lg hover:bg-cyan-700 font-medium"
+                      >
                         Schedule
                       </button>
                     </div>
@@ -285,19 +430,22 @@ export default function DashboardContent() {
                     </tr>
                   </thead>
                   <tbody>
-                    {postInterviewCandidates.map((candidate, index) => (
-                      <tr key={index} className="border-b border-gray-200 hover:bg-gray-50">
+                    {postInterviewView.map((candidate) => (
+                      <tr key={candidate.id} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="px-6 py-4 text-sm text-gray-700">
                           {candidate.name}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-700">
-                          {candidate.fitScore}
+                          {candidate.fitScore}%
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-700">
-                          {candidate.interviewRating}
+                          {candidate.interviewRating}%
                         </td>
                         <td className="px-6 py-4">
-                          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                          <button
+                            onClick={() => openAction({ type: 'download', candidateId: candidate.id, candidateName: candidate.name, list: 'post' })}
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                          >
                             Download
                           </button>
                         </td>
@@ -310,7 +458,10 @@ export default function DashboardContent() {
                           </button>
                         </td>
                         <td className="px-6 py-4">
-                          <button className="text-sm text-red-600 hover:text-red-700 font-medium">
+                          <button
+                            onClick={() => openAction({ type: 'reject', candidateId: candidate.id, candidateName: candidate.name, list: 'post' })}
+                            className="text-sm text-red-600 hover:text-red-700 font-medium"
+                          >
                             Reject
                           </button>
                         </td>
@@ -322,24 +473,27 @@ export default function DashboardContent() {
 
               {/* Mobile Cards */}
               <div className="lg:hidden divide-y divide-gray-200">
-                {postInterviewCandidates.map((candidate, index) => (
-                  <div key={index} className="p-4 space-y-3">
+                {postInterviewView.map((candidate) => (
+                  <div key={candidate.id} className="p-4 space-y-3">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{candidate.name}</p>
                       <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                         <div>
                           <span className="text-gray-500">Fit Score:</span>
-                          <span className="ml-1 font-medium text-gray-900">{candidate.fitScore}</span>
+                          <span className="ml-1 font-medium text-gray-900">{candidate.fitScore}%</span>
                         </div>
                         <div>
                           <span className="text-gray-500">Interview:</span>
-                          <span className="ml-1 font-medium text-gray-900">{candidate.interviewRating}</span>
+                          <span className="ml-1 font-medium text-gray-900">{candidate.interviewRating}%</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 pt-2">
                       <div className="flex gap-2">
-                        <button className="flex-1 px-3 py-2 text-sm text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 font-medium">
+                        <button
+                          onClick={() => openAction({ type: 'download', candidateId: candidate.id, candidateName: candidate.name, list: 'post' })}
+                          className="flex-1 px-3 py-2 text-sm text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 font-medium"
+                        >
                           Download Report
                         </button>
                         <button
@@ -349,7 +503,10 @@ export default function DashboardContent() {
                           View AI Card
                         </button>
                       </div>
-                      <button className="w-full px-3 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 font-medium">
+                      <button
+                        onClick={() => openAction({ type: 'reject', candidateId: candidate.id, candidateName: candidate.name, list: 'post' })}
+                        className="w-full px-3 py-2 text-sm text-white bg-red-600 rounded-lg hover:bg-red-700 font-medium"
+                      >
                         Reject Candidate
                       </button>
                     </div>

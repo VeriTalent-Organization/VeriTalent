@@ -1,16 +1,15 @@
 import React, { useState, DragEvent, ChangeEvent } from 'react';
 
 export default function BulkUpload({
-  onNext,
-  onBack,
-  canBack = true,
+  selectedJob,
 }: {
   onNext?: () => void;
   onBack?: () => void;
   canBack?: boolean;
+  selectedJob?: { jobId: string; companyName: string } | null;
 }) {
-  const [jobId, setJobId] = useState<string>('');
-  const [companyName, setCompanyName] = useState<string>('');
+  const [jobId] = useState<string>(selectedJob?.jobId || '');
+  const [companyName] = useState<string>(selectedJob?.companyName || '');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -55,10 +54,10 @@ export default function BulkUpload({
             <label className="block text-sm font-medium text-gray-900 mb-2">Job ID</label>
             <input
               type="text"
-              placeholder="Job Title"
+              placeholder="Job ID"
               value={jobId}
-              onChange={(e) => setJobId(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-500 placeholder-gray-400"
+              readOnly
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 placeholder-gray-400"
             />
           </div>
           <div>
@@ -67,8 +66,8 @@ export default function BulkUpload({
               type="text"
               placeholder="Company Name"
               value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary text-gray-400 placeholder-gray-400"
+              readOnly
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 placeholder-gray-400"
             />
           </div>
         </div>

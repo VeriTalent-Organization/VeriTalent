@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Download, ChevronDown, Eye, FileCheck } from 'lucide-react';
 
 export default function VeriTalentAICard() {
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  const triggerAction = (label: string) => {
+    setFeedback(`${label} initiated`);
+  };
+
+  // TODO: Replace with real data from profiles API for specific talent
   const skills = [
     { name: 'Digital Marketing', verifiedBy: 'AI + References', level: 'Advanced', color: 'bg-green-100 text-green-700' },
     { name: 'SEO & Analytics', verifiedBy: 'Recommendation (Manager)', level: 'Advanced', color: 'bg-green-100 text-green-700' },
@@ -32,7 +39,10 @@ export default function VeriTalentAICard() {
             <div className="flex items-end justify-end">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-700">Job Market</span>
-                <button className="px-4 py-1.5 bg-green-100 text-green-700 rounded-md text-sm font-medium flex items-center gap-1">
+                <button
+                  onClick={() => triggerAction('Job market status')}
+                  className="px-4 py-1.5 bg-green-100 text-green-700 rounded-md text-sm font-medium flex items-center gap-1"
+                >
                   Active
                   <ChevronDown className="w-4 h-4" />
                 </button>
@@ -206,13 +216,22 @@ export default function VeriTalentAICard() {
                 <p className="text-xs text-gray-600">Expired - Since 2024</p>
               </div>
               <div className="flex gap-2">
-                <button className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('View affiliation reference')}
+                  className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <Eye className="w-4 h-4 mx-auto" />
                 </button>
-                <button className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('Download affiliation reference')}
+                  className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <Download className="w-4 h-4 mx-auto" />
                 </button>
-                <button className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('Mark affiliation reference complete')}
+                  className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <FileCheck className="w-4 h-4 mx-auto" />
                 </button>
               </div>
@@ -230,13 +249,22 @@ export default function VeriTalentAICard() {
                 <p className="text-xs text-gray-600">Issued - Oct 2020</p>
               </div>
               <div className="flex gap-2">
-                <button className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('View certificate verification')}
+                  className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <Eye className="w-4 h-4 mx-auto" />
                 </button>
-                <button className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('Download certificate verification')}
+                  className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <Download className="w-4 h-4 mx-auto" />
                 </button>
-                <button className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('Mark certificate verification complete')}
+                  className="flex-1 p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <FileCheck className="w-4 h-4 mx-auto" />
                 </button>
               </div>
@@ -254,7 +282,10 @@ export default function VeriTalentAICard() {
                 <p className="text-xs text-gray-600">Jan 2023 - Mar 2024</p>
               </div>
               <div className="flex justify-end">
-                <button className="p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors">
+                <button
+                  onClick={() => triggerAction('View certificate record')}
+                  className="p-2 bg-brand-primary text-white rounded hover:bg-cyan-700 transition-colors"
+                >
                   <Eye className="w-4 h-4" />
                 </button>
               </div>
@@ -265,11 +296,21 @@ export default function VeriTalentAICard() {
         {/* Quick Actions */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <button className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium flex items-center gap-2">
+          <button
+            onClick={() => triggerAction('Download AI card PDF')}
+            className="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium flex items-center gap-2"
+          >
             <Download className="w-5 h-5" />
             Download PDF (VeriTalent AI Card)
           </button>
         </div>
+
+        {feedback && (
+          <div className="fixed bottom-4 right-4 z-40 bg-white shadow-lg border border-gray-200 px-4 py-3 rounded-lg text-sm text-gray-800">
+            {feedback}
+            <button onClick={() => setFeedback(null)} className="ml-3 text-brand-primary font-medium">Dismiss</button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2,23 +2,44 @@ import React from 'react';
 import { MapPin, Shield } from 'lucide-react';
 import FormComponent from '@/components/forms/form';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
-import { set } from 'zod';
-import { Text } from "@/components/reuseables/text";
+import { Text } from '@/components/reuseables/text';
 
-const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () => void }> & { hasNextButton?: boolean } = ({ onNext, onBack }) => {
-  const { user, setUser } = useCreateUserStore();
+interface OrganizationDetailsFormStepProps {
+  onNext: () => void;
+  onBack?: () => void;
+  isFinalStep?: boolean;
+}
+
+const OrganizationDetailsFormStep: React.FC<OrganizationDetailsFormStepProps> & {
+  hideParentButtons: boolean;
+} = ({ onNext, onBack }) => {
+  const { user, updateUser } = useCreateUserStore();
+
+  // Safety guard — should never be null here, but prevents crashes
+  if (!user) {
+    return (
+      <div className="text-center py-10">
+        <Text variant="SubText">Loading...</Text>
+      </div>
+    );
+  }
+
   const handleSubmit = (data: Record<string, string>) => {
-
-    setUser({
-      industry: data.industry,
+    console.log('[OrgForm2] Form data received:', data);
+    
+    const updateData = {
+      organisation_industry: data.industry,        // ← Correct field name
       organisation_size: data.organisation_size,
-      address: data.address,
-    })
+      organisation_location: data.address,          // ← Maps to location in store
+    };
+    
+    console.log('[OrgForm2] Updating user store with:', updateData);
+    
+    updateUser(updateData);
 
-    console.log('Form data:', data);
-    if (onNext) {
-      onNext();
-    }
+    console.log('[OrgForm2] Organization details saved');
+
+    onNext();
   };
 
   const formFields = [
@@ -35,12 +56,9 @@ const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () =
           'Manufacturing',
           'Retail',
           'Consulting',
-          'Other'
+          'Other',
         ],
         defaultValue: 'Select industry',
-        onSelect: (value: string) => {
-          console.log('Industry selected:', value);
-        },
       },
     },
     {
@@ -54,17 +72,14 @@ const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () =
           '51-200 employees',
           '201-500 employees',
           '501-1000 employees',
-          '1000+ employees'
+          '1000+ employees',
         ],
         defaultValue: 'Select size',
-        onSelect: (value: string) => {
-          console.log('Organisation size selected:', value);
-        },
       },
     },
     {
       name: 'address',
-      label: 'Address',
+      label: 'Organisation Address',
       placeholder: 'Enter full organisation address',
       icons: [
         {
@@ -93,15 +108,14 @@ const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () =
       </div>
 
       <div className="w-full max-w-md">
-        {/* Form Component */}
         <FormComponent
           fields={formFields}
           submitButtonText="Next →"
-          submitButtonStyle="w-full bg-brand-primary hover:bg-cyan-700"
+          submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90 py-3 rounded-lg font-medium"
           submitFunction={handleSubmit}
         />
 
-        {/* Verification Process Info */}
+        {/* Verification Info */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
           <div className="flex items-start gap-2 sm:gap-3">
             <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 shrink-0 mt-0.5" />
@@ -115,19 +129,14 @@ const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () =
                 Verification Process
               </Text>
 
-              <Text
-                variant="SubText"
-                className=""
-                color="#1d4ed8"
-              >
-                After registration, we&apos;ll verify your organisation through email domain
-                verification and may require additional documentation for manual verification.
+              <Text variant="SubText" color="#1d4ed8">
+                After registration, we&apos;ll verify your organisation through email domain verification and may require additional documentation for manual verification.
               </Text>
             </div>
           </div>
         </div>
 
-        {/* Terms Checkbox */}
+        {/* Terms Checkbox (optional — you can connect to store if needed) */}
         <div className="flex items-start gap-2 mt-6">
           <input
             type="checkbox"
@@ -135,15 +144,16 @@ const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () =
             className="mt-1 w-4 h-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary shrink-0"
           />
           <label htmlFor="terms" className="text-xs sm:text-sm text-gray-700 cursor-pointer leading-relaxed">
-            I agree to the <span className="text-brand-primary hover:underline">Terms of Service</span> and{' '}
+            I agree to the{' '}
+            <span className="text-brand-primary hover:underline">Terms of Service</span> and{' '}
             <span className="text-brand-primary hover:underline">Privacy Policy</span>.
           </label>
         </div>
 
         {/* Back Button */}
         <div className="mt-6 text-center">
-          <button 
-            onClick={onBack} 
+          <button
+            onClick={onBack}
             className="text-gray-600 hover:text-gray-800 text-sm sm:text-base flex items-center gap-2 mx-auto transition-colors"
           >
             ← Back
@@ -154,6 +164,7 @@ const OrganizationDetailsFormStep: React.FC<{ onNext?: () => void; onBack?: () =
   );
 };
 
-OrganizationDetailsFormStep.hasNextButton = true;
+// This step has its own Next button
+OrganizationDetailsFormStep.hideParentButtons = true;
 
 export default OrganizationDetailsFormStep;

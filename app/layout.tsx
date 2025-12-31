@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-
+import StoreHydration from "@/components/layout/StoreHydration";
+import { serverUsersService } from "@/lib/services/serverApiClient";
+import type { UserMeResponseDto } from "@/lib/services/usersService";
 
 export const metadata: Metadata = {
   title: {
@@ -40,11 +42,15 @@ const plus_jarkata_sans = Plus_Jakarta_Sans(
   }
 )
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Fetch user profile on server side
+  const userDataResponse = await serverUsersService.getMe();
+  const userData = (userDataResponse?.success ? userDataResponse.data : null) as UserMeResponseDto | null;
+
   return (
     <html lang="en">
       <head>
@@ -59,13 +65,16 @@ export default function RootLayout({
         <link rel="canonical" href="https://www.veritalent.com" />
       </head>
       <body
-        className={`${plus_jarkata_sans.className} antialiased`}
+        className={`max-h-dvh h-dvh ${plus_jarkata_sans.className} antialiased`}
         suppressHydrationWarning // Optional: Suppresses warnings from font loading
       >
         {/* Optional accessibility enhancement: Skip link (improves keyboard navigation & indirect SEO) */}
         <a href="#main-content" className="sr-only focus:not-sr-only">
           Skip to main content
         </a>
+        
+        {/* Hydrate client-side store with server-fetched user data */}
+        <StoreHydration userData={userData} />
 
         {children}
 

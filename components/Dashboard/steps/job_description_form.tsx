@@ -5,12 +5,13 @@ import FormComponent from '@/components/forms/form'; // Adjust path as needed
 
 interface JobDescriptionFormProps {
   onNext?: () => void;
-  onBack?: () => void;
+  onDataChange?: (data: Record<string, string>) => void;
 }
 
-export default function JobDescriptionForm({ onNext, onBack }: JobDescriptionFormProps) {
+export default function JobDescriptionForm({ onNext, onDataChange }: JobDescriptionFormProps) {
   const handleSubmit = (data: Record<string, string>) => {
     console.log('Job Description data:', data);
+    onDataChange?.(data);
     onNext?.();
   };
 
@@ -63,7 +64,7 @@ export default function JobDescriptionForm({ onNext, onBack }: JobDescriptionFor
             submitButtonText="Next: Screening Criteria"
             submitButtonStyle="bg-cyan-600 hover:bg-cyan-700 text-white px-8"
             submitButtonPosition="right"
-            showSubmitButton={false}
+            showSubmitButton={true}
             submitFunction={handleSubmit}
           />
         </div>

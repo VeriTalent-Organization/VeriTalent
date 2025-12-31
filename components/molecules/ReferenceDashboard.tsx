@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FileText } from "lucide-react";
 import StatsSection from "./StatsSection";
 import NewRequestsSection from "./NewRequestsSection";
 import RepositoryCard from "./RepositoryCard";
 import { RepositoryItem, RepositoryType } from "@/types/dashboard";
+import { referencesService } from "@/lib/services/referencesService";
+import { useCreateUserStore } from "@/lib/stores/form_submission_store";
 
 interface ReferencesDashboardProps {
   repositories: RepositoryItem[];
@@ -20,11 +22,39 @@ export default function ReferencesDashboard({
   onCertificateVerification,
   onViewRepository,
 }: ReferencesDashboardProps) {
-  const stats = [
-    { label: "Placement ID", value: "VT-98421-NG" },
-    { label: "Verified Credentials", value: 6 },
-    { label: "Pending Requests", value: 2 },
-  ];
+  const { user } = useCreateUserStore();
+  const [stats, setStats] = useState([
+    { label: "Placement ID", value: user.veritalent_id || "Loading..." },
+    { label: "Verified Credentials", value: 0 },
+    { label: "Pending Requests", value: 0 },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const references = await referencesService.getMyReferences();
+        
+        interface Reference {
+          status: 'verified' | 'pending' | 'rejected';
+          [key: string]: unknown;
+        }
+        
+        setStats([
+          { label: "Placement ID", value: user.veritalent_id || "N/A" },
+          { label: "Verified Credentials", value: references.filter((r: Reference) => r.status === 'verified').length },
+          { label: "Pending Requests", value: references.filter((r: Reference) => r.status === 'pending').length },
+        ]);
+      } catch (error) {
+        console.error('Failed to fetch references stats:', error);
+        setStats([
+          { label: "Placement ID", value: user.veritalent_id || "Error" },
+          { label: "Verified Credentials", value: 0 },
+          { label: "Pending Requests", value: 0 },
+        ]);
+      }
+    };
+    fetchStats();
+  }, [user.veritalent_id]);
 
   return (
     <>

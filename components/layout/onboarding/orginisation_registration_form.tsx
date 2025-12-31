@@ -2,41 +2,63 @@ import React from 'react';
 import { Mail, Globe } from 'lucide-react';
 import FormComponent from '@/components/forms/form';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
-import { set } from 'zod';
 import { Text } from '@/components/reuseables/text';
 
 interface OrganizationRegistrationFormStepProps {
-  onNext?: () => void;
+  onNext: () => void;
   onBack?: () => void;
+  isFinalStep?: boolean;
 }
 
-const OrganizationRegistrationFormStep: React.FC<{ onNext?: () => void; onBack?: () => void }> & { hasNextButton?: boolean } = ({ onNext, onBack }) => {
-  const { user, setUser } = useCreateUserStore();
-  const handleSubmit = (data: Record<string, string>) => {
+const OrganizationRegistrationFormStep: React.FC<OrganizationRegistrationFormStepProps> & {
+  hideParentButtons: boolean;
+} = ({ onNext, onBack }) => {
+  const { user, updateUser } = useCreateUserStore();
 
-    setUser({
-      organisation_name: data.organisation_name,
-      rc_number: data.rc_number,
-      email_domain: data.email_domain,
-      website: data.website,
+  // Safety check — should never be null here, but protects from crashes
+  if (!user) {
+    return (
+      <div className="text-center py-10">
+        <Text variant="SubText">Loading...</Text>
+      </div>
+    );
+  }
+
+  const handleSubmit = (data: Record<string, string>) => {
+    // Validate LinkedIn URL if provided
+    if (data.website && data.website.trim()) {
+      try {
+        new URL(data.website);
+        // Valid URL
+      } catch {
+        alert('Please enter a valid URL for LinkedIn/Website (e.g., https://linkedin.com/company/abc)');
+        return;
+      }
+    }
+
+    // Save organization-specific data using correct field names from your store
+    updateUser({
+      organization_name: data.organisation_name,
+      organisation_rc_number: data.rc_number,
+      organization_domain: data.email_domain,
+      organization_linkedin_page: data.website || '',
     });
 
-    console.log('Form data:', data);
-    if (onNext) {
-      onNext();
-    }
+    console.log('Organization registration data saved:', data);
+
+    onNext();
   };
 
   const formFields = [
     {
       name: 'organisation_name',
       label: 'Organisation Name',
-      placeholder: 'e.g TechCorp inc.',
+      placeholder: 'e.g. TechCorp Inc.',
     },
     {
       name: 'rc_number',
       label: 'RC Number',
-      placeholder: 'e.g RC455568',
+      placeholder: 'e.g. RC455568',
     },
     {
       name: 'email_domain',
@@ -53,8 +75,9 @@ const OrganizationRegistrationFormStep: React.FC<{ onNext?: () => void; onBack?:
     },
     {
       name: 'website',
-      label: 'Website',
-      placeholder: 'www.corpcompany.com',
+      label: 'Website (LinkedIn or Official)',
+      placeholder: 'https://linkedin.com/company/techcorp',
+      description: 'Must be a complete URL starting with https://',
       icons: [
         {
           icon: <Globe size={18} />,
@@ -82,18 +105,16 @@ const OrganizationRegistrationFormStep: React.FC<{ onNext?: () => void; onBack?:
       </div>
 
       <div className="w-full max-w-md">
-        {/* Form Component */}
         <FormComponent
           fields={formFields}
           submitButtonText="Next →"
-          submitButtonStyle="w-full bg-brand-primary hover:bg-cyan-700"
+          submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90 py-3 rounded-lg font-medium"
           submitFunction={handleSubmit}
         />
 
-        {/* Back Button */}
         <div className="mt-6 text-center">
-          <button 
-            onClick={onBack} 
+          <button
+            onClick={onBack}
             className="text-gray-600 hover:text-gray-800 text-sm sm:text-base flex items-center gap-2 mx-auto transition-colors"
           >
             ← Back
@@ -104,6 +125,7 @@ const OrganizationRegistrationFormStep: React.FC<{ onNext?: () => void; onBack?:
   );
 };
 
-OrganizationRegistrationFormStep.hasNextButton = true;
+// This step has its own Next button → hide parent's
+OrganizationRegistrationFormStep.hideParentButtons = true;
 
 export default OrganizationRegistrationFormStep;

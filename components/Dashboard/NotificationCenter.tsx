@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, Trash2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { notificationsService, Notification } from '@/lib/services/notificationsService';
@@ -16,7 +16,6 @@ export default function NotificationCenter({ className = '' }: NotificationCente
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load notifications on mount
   useEffect(() => {
@@ -34,17 +33,7 @@ export default function NotificationCenter({ className = '' }: NotificationCente
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // No need for click outside logic - backdrop handles closing
 
   const loadNotifications = async () => {
     try {
@@ -129,7 +118,7 @@ export default function NotificationCenter({ className = '' }: NotificationCente
   const unreadNotifications = notifications.filter(n => !n.isRead);
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative ${className}`}>
       {/* Notification Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -145,7 +134,11 @@ export default function NotificationCenter({ className = '' }: NotificationCente
 
       {/* Notification Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-hidden">
+        <>
+          {/* Modal Backdrop */}
+          <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setIsOpen(false)} />
+          {/* Centered Modal */}
+          <div className="fixed left-1/2 top-1/2 z-50 w-80 max-h-96 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
@@ -172,7 +165,7 @@ export default function NotificationCenter({ className = '' }: NotificationCente
               <div className="p-8 text-center text-gray-500">
                 <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
                 <p>No notifications yet</p>
-                <p className="text-sm">We'll notify you when something important happens.</p>
+                <p className="text-sm">We&apos;ll notify you when something important happens.</p>
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
@@ -244,7 +237,8 @@ export default function NotificationCenter({ className = '' }: NotificationCente
               </Link>
             </div>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

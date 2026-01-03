@@ -133,14 +133,6 @@ export interface UserMeResponseDto {
 
 // Users service functions
 export const usersService = {
-  // Add a role to the user
-  addRole: async (data: AddRoleDto) => {
-    console.log('[usersService] Calling POST /users/role/add with data:', data);
-    const response = await apiClient.post('/users/role/add', data);
-    console.log('[usersService] POST /users/role/add response:', response.data);
-    return response.data;
-  },
-
   // Link an email to the user
   linkEmail: async (data: LinkEmailDto) => {
     const response = await apiClient.patch('/users/email/link', data);
@@ -155,9 +147,17 @@ export const usersService = {
     return response.data;
   },
 
+  // Add a role to user's roles array
+  addRole: async (data: AddRoleDto) => {
+    console.log('[usersService] Calling POST /users/role/add with data:', data);
+    const response = await apiClient.post('/users/role/add', data);
+    console.log('[usersService] POST /users/role/add response:', response.data);
+    return response.data;
+  },
+
   // Update independent recruiter profile
   updateRecruiterProfile: async (data: UpdateRecruiterUserDto) => {
-    const response = await apiClient.patch('/users/recruiter/profile', data);
+    const response = await apiClient.patch('/v1/users/recruiter/profile', data);
     return response.data;
   },
 

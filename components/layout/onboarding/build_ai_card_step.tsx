@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Cloud, Linkedin, FileText } from 'lucide-react';
+import { cvParsingService } from '@/lib/services/cvParsingService';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
 
 interface BuildAICardStepProps {
@@ -71,16 +72,58 @@ const BuildAICardStep: OnboardingStepComponent = ({ onNext, onBack }) => {
     }, 1500);
   };
 
-  const handleProceedToDashboard = () => {
-    if (uploadedFile || linkedLinkedIn) {
+  const handleProceedToDashboard = async () => {
+    if (!isComplete || isUploading) return;
+
+    setIsUploading(true); // Reuse loading state
+
+    try {
+      let parsedData = null;
+
+      if (uploadedFile) {
+        // Parse uploaded CV
+        const parseRequest = {
+          file: uploadedFile,
+          extractPersonalInfo: true,
+          extractWorkExperience: true,
+          extractEducation: true,
+          extractSkills: true,
+          extractCertifications: true,
+          extractLanguages: true,
+          extractProjects: true,
+        };
+        const response = await cvParsingService.parseCV(parseRequest);
+        parsedData = response.data;
+      } else if (linkedLinkedIn) {
+        // Import LinkedIn profile
+        parsedData = await cvParsingService.importLinkedInProfile();
+      }
+
+      // Update store with all data
       updateUser({
         cv_uploaded: uploadedFile ? true : false,
         linkedin_connected: linkedLinkedIn,
         veritalent_id: veritalentId,
         cv_file: uploadedFile || undefined,
-        cv_source: uploadedFile ? 'upload' : linkedLinkedIn ? 'linkedin' : undefined
+        cv_source: uploadedFile ? 'upload' : linkedLinkedIn ? 'linkedin' : undefined,
+        parsed_cv_data: parsedData,
+        cv_parsed: true,
+      });
+
+      onNext();
+    } catch (error) {
+      console.error('Error processing CV:', error);
+      // Still proceed even if parsing fails
+      updateUser({
+        cv_uploaded: uploadedFile ? true : false,
+        linkedin_connected: linkedLinkedIn,
+        veritalent_id: veritalentId,
+        cv_file: uploadedFile || undefined,
+        cv_source: uploadedFile ? 'upload' : linkedLinkedIn ? 'linkedin' : undefined,
       });
       onNext();
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -233,7 +276,7 @@ const BuildAICardStep: OnboardingStepComponent = ({ onNext, onBack }) => {
           disabled={!isComplete || isUploading}
           className="w-full sm:w-auto px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition"
         >
-          Proceed to Dashboard
+          {isUploading ? 'Processing...' : 'Proceed to Dashboard'}
         </button>
       </div>
     </div>

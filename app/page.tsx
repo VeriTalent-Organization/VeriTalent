@@ -9,7 +9,6 @@ import RolePickerStep from '@/components/layout/onboarding/role_picker'
 import RegistrationFormStep from '@/components/layout/onboarding/registration_form_step'
 import MultiEmailIdentityStep from '@/components/layout/onboarding/multi_email_identity_step'
 import BuildAICardStep from '@/components/layout/onboarding/build_ai_card_step'
-import CVParsingStep from '@/components/layout/onboarding/cv_parsing_step'
 import EmployerProfileStep from '@/components/layout/onboarding/employer_from_step'
 import OrganizationRegistrationFormStep from '@/components/layout/onboarding/orginisation_registration_form'
 import OrganizationDetailsFormStep from '@/components/layout/onboarding/organisation_registration_form2'
@@ -73,7 +72,7 @@ const Home = () => {
 
     switch (user.user_type) {
       case userTypes.TALENT:
-        return [...baseSteps, RegistrationFormStep, MultiEmailIdentityStep, BuildAICardStep, CVParsingStep]
+        return [...baseSteps, RegistrationFormStep, MultiEmailIdentityStep, BuildAICardStep]
       case userTypes.INDEPENDENT_RECRUITER:
         return [...baseSteps, RegistrationFormStep, EmployerProfileStep]
       case userTypes.ORGANISATION:
@@ -265,7 +264,7 @@ const Home = () => {
         </div>
       )}
 
-      <div className="min-h-[400px] flex items-center justify-center">
+      <div className="min-h-[400px] flex mb-10 items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -281,7 +280,7 @@ const Home = () => {
       </div>
 
       {steps[currentStep] && !hideParentButtons && (
-        <div className="flex justify-between mt-10 mb-6">
+        <div className="flex justify-between">
           <button
             onClick={goBack}
             disabled={currentStep === 0 || isSubmitting}

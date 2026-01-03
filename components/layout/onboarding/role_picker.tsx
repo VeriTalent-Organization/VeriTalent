@@ -2,8 +2,9 @@ import UserTypeCard from '@/components/reuseables/cards/user_type_card'
 import { Text } from '@/components/reuseables/text'
 import { useCreateUserStore } from '@/lib/stores/form_submission_store'
 import { userTypes } from '@/types/user_type'
-import { Briefcase, Building2, User } from 'lucide-react'
+import { Briefcase, Building2, User, LogIn } from 'lucide-react'
 import React from 'react'
+import { useRouter } from 'next/navigation'
 
 interface RolePickerStepProps {
   onNext?: () => void
@@ -15,6 +16,7 @@ const RolePickerStep: React.FC<RolePickerStepProps> & {
   hideParentButtons?: boolean
 } = ({ onNext }) => {
   const { user, updateUser } = useCreateUserStore()
+  const router = useRouter()
 
   // If user is null (guest), use default role for selection state
   const selectedType = user?.user_type ?? userTypes.TALENT
@@ -27,8 +29,24 @@ const RolePickerStep: React.FC<RolePickerStepProps> & {
     // Users must click Next button to proceed, preventing accidental role selection
   }
 
+  const handleLogin = () => {
+    // Navigate to login page
+    router.push('/auth/login')
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[600px] gap-12 px-4">
+      {/* Login Button */}
+      <div className="w-full flex justify-end">
+        <button
+          onClick={handleLogin}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+        >
+          <LogIn size={16} />
+          Already have an account? Login
+        </button>
+      </div>
+
       <div className="text-center space-y-6 max-w-2xl">
         <Text as="h1" variant="SubHeadings" className="text-3xl sm:text-4xl md:text-5xl">
           Welcome to <span className="text-brand-primary">VeriTalent!</span>

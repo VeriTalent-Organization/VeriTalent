@@ -209,8 +209,8 @@ export default function CVParsingComponent({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
-      <div className="mb-8">
+    <div className="w-full">
+      {/* <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           AI CV Parsing
         </h1>
@@ -218,7 +218,7 @@ export default function CVParsingComponent({
           Upload your CV or import from LinkedIn to let our AI extract your professional information automatically.
           Review and edit the results before saving.
         </p>
-      </div>
+      </div> */}
 
       {/* Data Source Selection */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

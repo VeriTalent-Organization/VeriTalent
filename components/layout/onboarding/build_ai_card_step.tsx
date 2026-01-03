@@ -76,7 +76,9 @@ const BuildAICardStep: OnboardingStepComponent = ({ onNext, onBack }) => {
       updateUser({
         cv_uploaded: uploadedFile ? true : false,
         linkedin_connected: linkedLinkedIn,
-        veritalent_id: veritalentId
+        veritalent_id: veritalentId,
+        cv_file: uploadedFile || undefined,
+        cv_source: uploadedFile ? 'upload' : linkedLinkedIn ? 'linkedin' : undefined
       });
       onNext();
     }

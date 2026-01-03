@@ -17,6 +17,7 @@ interface Job {
   employmentType?: string;
   tags?: string[];
   postedAt?: string;
+  createdAt?: string;
   closesAt?: string;
   aiMatchScore?: number;
   matchedSkills?: string[];
@@ -33,6 +34,10 @@ export default function JobRecommendations() {
     employmentType: 'all',
     location: 'all',
     minMatchScore: 0,
+    salaryRange: 'all',
+    experienceLevel: 'all',
+    workType: 'all',
+    postedWithin: 'all',
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -142,6 +147,93 @@ export default function JobRecommendations() {
     // Location filter
     if (selectedFilters.location !== 'all') {
       filtered = filtered.filter(job => job.location === selectedFilters.location);
+    }
+
+    // Work type filter (remote/hybrid/onsite)
+    if (selectedFilters.workType !== 'all') {
+      filtered = filtered.filter(job => {
+        const jobDescription = (job.description || '').toLowerCase();
+        const jobTitle = (job.title || '').toLowerCase();
+        const searchText = `${jobDescription} ${jobTitle}`;
+        
+        switch (selectedFilters.workType) {
+          case 'remote':
+            return searchText.includes('remote') || searchText.includes('work from home');
+          case 'hybrid':
+            return searchText.includes('hybrid');
+          case 'onsite':
+            return !searchText.includes('remote') && !searchText.includes('hybrid');
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Experience level filter
+    if (selectedFilters.experienceLevel !== 'all') {
+      filtered = filtered.filter(job => {
+        const jobDescription = (job.description || '').toLowerCase();
+        const jobTitle = (job.title || '').toLowerCase();
+        const searchText = `${jobDescription} ${jobTitle}`;
+        
+        switch (selectedFilters.experienceLevel) {
+          case 'entry':
+            return searchText.includes('entry') || searchText.includes('junior') || searchText.includes('0-2');
+          case 'mid':
+            return searchText.includes('mid') || searchText.includes('3-5') || searchText.includes('intermediate');
+          case 'senior':
+            return searchText.includes('senior') || searchText.includes('lead') || searchText.includes('5+');
+          case 'executive':
+            return searchText.includes('executive') || searchText.includes('director') || searchText.includes('vp');
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Salary range filter (basic implementation - would need backend support for accurate filtering)
+    if (selectedFilters.salaryRange !== 'all') {
+      filtered = filtered.filter(job => {
+        const jobDescription = (job.description || '').toLowerCase();
+        // Basic salary detection - in real implementation, this would come from backend
+        const hasSalaryInfo = jobDescription.includes('salary') || jobDescription.includes('$') || jobDescription.includes('₦');
+        
+        switch (selectedFilters.salaryRange) {
+          case '0-50k':
+            return hasSalaryInfo; // Placeholder - backend needed for accurate filtering
+          case '50k-100k':
+            return hasSalaryInfo;
+          case '100k-200k':
+            return hasSalaryInfo;
+          case '200k+':
+            return hasSalaryInfo;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Posted within filter
+    if (selectedFilters.postedWithin !== 'all') {
+      filtered = filtered.filter(job => {
+        const postedDate = new Date(job.postedAt || job.createdAt || Date.now());
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - postedDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        switch (selectedFilters.postedWithin) {
+          case '1':
+            return diffDays <= 1;
+          case '3':
+            return diffDays <= 3;
+          case '7':
+            return diffDays <= 7;
+          case '30':
+            return diffDays <= 30;
+          default:
+            return true;
+        }
+      });
     }
 
     // Match score filter
@@ -260,14 +352,14 @@ export default function JobRecommendations() {
           <>
             {/* Search and Filters */}
             <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 {/* Search */}
                 <div className="lg:col-span-2">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="text"
-                      placeholder="Search jobs, companies..."
+                      placeholder="Search jobs, companies, skills..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
@@ -287,9 +379,26 @@ export default function JobRecommendations() {
                     <option value="Part-time">Part-time</option>
                     <option value="Contract">Contract</option>
                     <option value="Internship">Internship</option>
+                    <option value="Freelance">Freelance</option>
                   </select>
                 </div>
 
+                {/* Work Type Filter */}
+                <div>
+                  <select
+                    value={selectedFilters.workType}
+                    onChange={(e) => setSelectedFilters({ ...selectedFilters, workType: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                  >
+                    <option value="all">All Work Types</option>
+                    <option value="remote">Remote</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="onsite">On-site</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Location Filter */}
                 <div>
                   <select
@@ -302,6 +411,53 @@ export default function JobRecommendations() {
                     <option value="Lagos">Lagos</option>
                     <option value="Abuja">Abuja</option>
                     <option value="Port Harcourt">Port Harcourt</option>
+                    <option value="Kano">Kano</option>
+                    <option value="Ibadan">Ibadan</option>
+                  </select>
+                </div>
+
+                {/* Experience Level Filter */}
+                <div>
+                  <select
+                    value={selectedFilters.experienceLevel}
+                    onChange={(e) => setSelectedFilters({ ...selectedFilters, experienceLevel: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                  >
+                    <option value="all">All Experience Levels</option>
+                    <option value="entry">Entry Level (0-2 years)</option>
+                    <option value="mid">Mid Level (3-5 years)</option>
+                    <option value="senior">Senior Level (5+ years)</option>
+                    <option value="executive">Executive Level</option>
+                  </select>
+                </div>
+
+                {/* Salary Range Filter */}
+                <div>
+                  <select
+                    value={selectedFilters.salaryRange}
+                    onChange={(e) => setSelectedFilters({ ...selectedFilters, salaryRange: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                  >
+                    <option value="all">All Salary Ranges</option>
+                    <option value="0-50k">₦0 - ₦50,000</option>
+                    <option value="50k-100k">₦50,000 - ₦100,000</option>
+                    <option value="100k-200k">₦100,000 - ₦200,000</option>
+                    <option value="200k+">₦200,000+</option>
+                  </select>
+                </div>
+
+                {/* Posted Within Filter */}
+                <div>
+                  <select
+                    value={selectedFilters.postedWithin}
+                    onChange={(e) => setSelectedFilters({ ...selectedFilters, postedWithin: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                  >
+                    <option value="all">All Time</option>
+                    <option value="1">Last 24 hours</option>
+                    <option value="3">Last 3 days</option>
+                    <option value="7">Last week</option>
+                    <option value="30">Last month</option>
                   </select>
                 </div>
               </div>
@@ -326,6 +482,27 @@ export default function JobRecommendations() {
                   </span>
                 </div>
               )}
+
+              {/* Clear Filters Button */}
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedFilters({
+                      employmentType: 'all',
+                      location: 'all',
+                      minMatchScore: 0,
+                      salaryRange: 'all',
+                      experienceLevel: 'all',
+                      workType: 'all',
+                      postedWithin: 'all',
+                    });
+                  }}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </div>
             </div>
 
             {/* Results Header */}
@@ -415,6 +592,10 @@ export default function JobRecommendations() {
                           employmentType: 'all',
                           location: 'all',
                           minMatchScore: 0,
+                          salaryRange: 'all',
+                          experienceLevel: 'all',
+                          workType: 'all',
+                          postedWithin: 'all',
                         });
                       }}
                       className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"

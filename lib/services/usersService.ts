@@ -9,6 +9,15 @@ export interface LinkEmailDto {
   email: string;
 }
 
+export interface VerifyEmailDto {
+  email: string;
+  code: string;
+}
+
+export interface SetPrimaryEmailDto {
+  email: string;
+}
+
 export interface UpdateRecruiterUserDto {
   professionalDesignation?: string;
   recruiterOrganizationName?: string;
@@ -149,6 +158,42 @@ export const usersService = {
   // Update independent recruiter profile
   updateRecruiterProfile: async (data: UpdateRecruiterUserDto) => {
     const response = await apiClient.patch('/users/recruiter/profile', data);
+    return response.data;
+  },
+
+  // Email management functions
+  addEmail: async (data: LinkEmailDto) => {
+    console.log('[usersService] Calling POST /users/emails/add with data:', data);
+    const response = await apiClient.post('/users/emails/add', data);
+    console.log('[usersService] POST /users/emails/add response:', response.data);
+    return response.data;
+  },
+
+  verifyEmail: async (data: VerifyEmailDto) => {
+    console.log('[usersService] Calling POST /users/emails/verify with data:', data);
+    const response = await apiClient.post('/users/emails/verify', data);
+    console.log('[usersService] POST /users/emails/verify response:', response.data);
+    return response.data;
+  },
+
+  resendVerificationCode: async (email: string) => {
+    console.log('[usersService] Calling POST /users/emails/resend-verification with email:', email);
+    const response = await apiClient.post('/users/emails/resend-verification', { email });
+    console.log('[usersService] POST /users/emails/resend-verification response:', response.data);
+    return response.data;
+  },
+
+  removeEmail: async (email: string) => {
+    console.log('[usersService] Calling DELETE /users/emails/remove with email:', email);
+    const response = await apiClient.delete('/users/emails/remove', { data: { email } });
+    console.log('[usersService] DELETE /users/emails/remove response:', response.data);
+    return response.data;
+  },
+
+  setPrimaryEmail: async (data: SetPrimaryEmailDto) => {
+    console.log('[usersService] Calling PUT /users/emails/set-primary with data:', data);
+    const response = await apiClient.put('/users/emails/set-primary', data);
+    console.log('[usersService] PUT /users/emails/set-primary response:', response.data);
     return response.data;
   },
 };

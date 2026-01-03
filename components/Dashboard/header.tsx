@@ -1,6 +1,6 @@
 "use client";
-import React, { useRef, useState }from "react";
-import { Search, Plus, User, List, Menu, X } from "lucide-react";
+import React, { useRef, useState, useEffect }from "react";
+import { Search, Plus, User, List, Menu, X, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/reuseables/text";
 import Link from "next/link";
@@ -9,6 +9,9 @@ import { userTypes } from "@/types/user_type";
 import { useIsMobile } from "@/lib/configs/use-mobile";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
+import NotificationCenter from "./NotificationCenter";
+import { authService } from "@/lib/services/authService";
+import { useRouter } from "next/navigation";
 
 interface DashboardHeaderProps {
   onMenuClick: () => void;
@@ -17,6 +20,7 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const { user } = useCreateUserStore();
   const isMobile = useIsMobile();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [showSecondaryNav, setShowSecondaryNav] = useState(true);
   const [searchResults, setSearchResults] = useState([]);
@@ -25,7 +29,68 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const [mobileSearch, setMobileSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const searchRef = useRef<HTMLDivElement | null>(null);  
+  const roleSwitcherRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false); 
+  const [showRoleSwitcher, setShowRoleSwitcher] = useState(false);
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
+
+  // Close role switcher when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (roleSwitcherRef.current && !roleSwitcherRef.current.contains(event.target as Node)) {
+        setShowRoleSwitcher(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close role switcher when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowRoleSwitcher(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleRoleSwitch = async (newRole: 'talent' | 'recruiter' | 'org_admin') => {
+    if (isSwitchingRole) return;
+
+    setIsSwitchingRole(true);
+    try {
+      await authService.switchRole({ role: newRole });
+      
+      const user_type = newRole === 'recruiter' ? userTypes.INDEPENDENT_RECRUITER : 
+                       newRole === 'talent' ? userTypes.TALENT : userTypes.ORGANISATION;
+      
+      useCreateUserStore.getState().updateUser({
+        active_role: newRole,
+        user_type
+      });
+      
+      // Redirect to appropriate dashboard
+      const dashboardRoute = newRole === 'talent' ? '/dashboard/ai-card' : '/dashboard';
+      router.push(dashboardRoute);
+    } catch (error) {
+      console.error('Failed to switch role:', error);
+      alert('Failed to switch role. Please try again.');
+    } finally {
+      setIsSwitchingRole(false);
+      setShowRoleSwitcher(false);
+    }
+  };
+
+  // Available roles for switching (excluding current role)
+  const availableRoles = [
+    { value: 'talent' as const, label: 'Talent', type: userTypes.TALENT },
+    { value: 'recruiter' as const, label: 'Recruiter', type: userTypes.INDEPENDENT_RECRUITER },
+    { value: 'org_admin' as const, label: 'Organization', type: userTypes.ORGANISATION },
+  ].filter(role => role.value !== user?.active_role); 
 
 
   return (
@@ -57,6 +122,43 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                 Post a Job
               </Link>
             )}
+
+            {/* Role Switcher - only show if user has multiple roles */}
+            {user?.available_roles && user.available_roles.length > 1 && (
+              <div className="relative" ref={roleSwitcherRef}>
+                <button
+                  onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  disabled={isSwitchingRole}
+                >
+                  <span className="text-gray-700">
+                    {user.active_role === 'talent' ? 'Talent' : 
+                     user.active_role === 'recruiter' ? 'Recruiter' : 'Organization'}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                </button>
+
+                {/* Role Switcher Dropdown */}
+                {showRoleSwitcher && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    {availableRoles.map((role) => (
+                      <button
+                        key={role.value}
+                        onClick={() => handleRoleSwitch(role.value)}
+                        disabled={isSwitchingRole}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Switch to {role.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Notification Center */}
+            <NotificationCenter />
+
             {/* User Icon */}
             <Link href="/dashboard/profile" className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center hover:bg-gray-200">
               <User className="w-5 h-5 text-gray-600" />
@@ -88,6 +190,9 @@ export default function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                 className="text-gray-800 w-5 h-5 cursor-pointer"
                 onClick={() => setMobileSearch(true)}
               />
+
+              {/* Notification Center */}
+              <NotificationCenter />
 
               {/* Post a Job Button */}
               {user.user_type !== userTypes.TALENT && (

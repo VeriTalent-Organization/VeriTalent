@@ -9,11 +9,12 @@ import RolePickerStep from '@/components/layout/onboarding/role_picker'
 import RegistrationFormStep from '@/components/layout/onboarding/registration_form_step'
 import MultiEmailIdentityStep from '@/components/layout/onboarding/multi_email_identity_step'
 import BuildAICardStep from '@/components/layout/onboarding/build_ai_card_step'
+import CVParsingStep from '@/components/layout/onboarding/cv_parsing_step'
 import EmployerProfileStep from '@/components/layout/onboarding/employer_from_step'
 import OrganizationRegistrationFormStep from '@/components/layout/onboarding/orginisation_registration_form'
 import OrganizationDetailsFormStep from '@/components/layout/onboarding/organisation_registration_form2'
 import VerificationProgress from '@/components/layout/onboarding/verificationProgress'
-import LoginPage from '@/components/layout/onboarding/login'
+import PostLoginRoleSelection from '@/components/layout/onboarding/post_login_role_selection'
 import Icons from '@/lib/configs/icons.config'
 import { useCreateUserStore } from '@/lib/stores/form_submission_store'
 import { userTypes } from '@/types/user_type'
@@ -43,17 +44,26 @@ const Home = () => {
   useEffect(() => {
     if (!_hasHydrated) return; // Wait for store to hydrate
     
-    // Wait for both token AND active_role (which comes from /users/me on server)
-    if (user?.token && user?.active_role && !hasRedirected.current) {
+    // Wait for both token AND available_roles (which comes from login)
+    if (user?.token && user?.available_roles && !hasRedirected.current) {
       hasRedirected.current = true;
+      
+      // Check if user has multiple roles and no active_role set
+      if (user.available_roles.length > 1 && !user.active_role) {
+        console.log('[app/page] User has multiple roles, showing role selection');
+        setShowPostLoginRoleSelection(true);
+        return;
+      }
+      
+      // User has single role or active_role already set, redirect normally
       const dashboardRoute = user.active_role === 'talent' ? '/dashboard/ai-card' : '/dashboard';
       console.log('[app/page] Redirecting authenticated user to:', dashboardRoute, { active_role: user.active_role });
       router.replace(dashboardRoute);
     }
-  }, [user?.token, user?.active_role, _hasHydrated, router])
+  }, [user?.token, user?.active_role, user?.available_roles, _hasHydrated, router])
 
-  // Always show login as first step
   const [showLogin, setShowLogin] = useState(true)
+  const [showPostLoginRoleSelection, setShowPostLoginRoleSelection] = useState(false)
 
   // Dynamically define onboarding steps based on role
   const steps = useMemo(() => {
@@ -63,7 +73,7 @@ const Home = () => {
 
     switch (user.user_type) {
       case userTypes.TALENT:
-        return [...baseSteps, RegistrationFormStep, MultiEmailIdentityStep, BuildAICardStep]
+        return [...baseSteps, RegistrationFormStep, MultiEmailIdentityStep, BuildAICardStep, CVParsingStep]
       case userTypes.INDEPENDENT_RECRUITER:
         return [...baseSteps, RegistrationFormStep, EmployerProfileStep]
       case userTypes.ORGANISATION:
@@ -117,12 +127,6 @@ const Home = () => {
         password: user.password || '',
         fullName: user.full_name,
         location: user.country,
-        role:
-          user.user_type === userTypes.TALENT
-            ? 'talent'
-            : user.user_type === userTypes.INDEPENDENT_RECRUITER
-            ? 'recruiter'
-            : 'org_admin',
         accountType:
           user.user_type === userTypes.TALENT
             ? 'talent'
@@ -138,6 +142,14 @@ const Home = () => {
         if (user.organisation_name) registerData.recruiterOrganizationName = user.organisation_name;
       }
 
+      // Add talent-specific CV fields
+      if (user.user_type === userTypes.TALENT) {
+        if (user.cv_source) registerData.cv_source = user.cv_source;
+        if (user.linkedin_connected !== undefined) registerData.linkedin_connected = user.linkedin_connected;
+        if (user.cv_file) registerData.cv_file = user.cv_file;
+        if (user.linked_emails) registerData.linked_emails = user.linked_emails;
+      }
+
       if (user.user_type === userTypes.ORGANISATION) {
         if (user.organization_name) registerData.organizationName = user.organization_name;
         if (user.organization_domain) registerData.organizationDomain = user.organization_domain;
@@ -150,7 +162,7 @@ const Home = () => {
 
       // Basic client-side guardrails for org admin payload completeness
       if (
-        registerData.role === 'org_admin' &&
+        user.user_type === userTypes.ORGANISATION &&
         (!registerData.organizationName || !registerData.organizationDomain)
       ) {
         setError('Please provide your organization name and official email domain.');
@@ -178,12 +190,39 @@ const Home = () => {
     }
   }
 
+  const handlePostLoginRoleSelected = async (role: 'talent' | 'recruiter' | 'org_admin') => {
+    console.log('[app/page] Post-login role selected:', role);
+    
+    try {
+      // Switch to the selected role
+      await authService.switchRole({ role });
+      
+      // Update the store with the selected role
+      const user_type = role === 'recruiter' ? userTypes.INDEPENDENT_RECRUITER : 
+                       role === 'talent' ? userTypes.TALENT : userTypes.ORGANISATION;
+      
+      useCreateUserStore.getState().updateUser({
+        active_role: role,
+        user_type
+      });
+      
+      // Redirect to appropriate dashboard
+      const dashboardRoute = role === 'talent' ? '/dashboard/ai-card' : '/dashboard';
+      router.replace(dashboardRoute);
+    } catch (error) {
+      console.error('Failed to switch role:', error);
+      setError('Failed to switch role. Please try again.');
+      setShowPostLoginRoleSelection(false);
+      hasRedirected.current = false; // Allow retry
+    }
+  }
+
   const goBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1)
   }
 
-  // Render login first
-  if (showLogin) {
+  // Render post-login role selection
+  if (showPostLoginRoleSelection) {
     return (
       <MaxWidthContainer large>
         <div className="flex items-center py-6">
@@ -191,19 +230,7 @@ const Home = () => {
         </div>
 
         <div className="min-h-[400px] flex items-center justify-center">
-          <LoginPage
-            onShowRegister={() => setShowLogin(false)}
-          />
-        </div>
-
-        <div className="text-center mt-8">
-          <span className="text-gray-600">New here? </span>
-          <button
-            onClick={() => setShowLogin(false)}
-            className="text-brand-primary font-medium hover:underline"
-          >
-            Create an account
-          </button>
+          <PostLoginRoleSelection onRoleSelected={handlePostLoginRoleSelected} />
         </div>
       </MaxWidthContainer>
     )

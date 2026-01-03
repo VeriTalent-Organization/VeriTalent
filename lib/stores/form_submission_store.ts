@@ -7,6 +7,7 @@ import { removeAuthTokenCookie } from "@/lib/utils/cookieUtils";
 
 export interface User {
   user_type: userTypes;
+  active_role?: 'talent' | 'recruiter' | 'org_admin';
   available_roles?: ('talent' | 'recruiter' | 'org_admin')[]; // All roles user has access to
 
   // Common
@@ -35,6 +36,10 @@ export interface User {
   linked_emails?: string[];
   linkedin_connected?: boolean;
   cv_uploaded?: boolean;
+  cv_file?: File;
+  cv_source?: 'upload' | 'linkedin';
+  cv_parsed?: boolean;
+  parsed_cv_data?: any; // Will be ParsedCVData type from cvParsingService
   talentProfile?: {
     _id?: string;
     user?: string;
@@ -64,7 +69,6 @@ export interface User {
   primary_email?: string;
   location?: string;
   roles?: ('talent' | 'recruiter' | 'org_admin')[];
-  active_role?: 'talent' | 'recruiter' | 'org_admin';
   profile_fetched?: boolean; // Flag to track if profile has been fetched
   is_switching_role?: boolean; // Flag to prevent redirect during role switch
 }
@@ -96,6 +100,13 @@ const initialFormState: User = {
   organisation_rc_number: "",
   organisation_industry: "",
   organisation_location: "",
+  veritalent_id: "",
+  linked_emails: [],
+  linkedin_connected: false,
+  cv_uploaded: false,
+  cv_source: undefined,
+  cv_parsed: false,
+  parsed_cv_data: undefined,
   token: null,
 };
 

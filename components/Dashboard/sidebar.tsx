@@ -15,6 +15,7 @@ import {
   Plus,
   ChevronDown,
   RefreshCw,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -130,6 +131,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       case userTypes.ORGANISATION:
         return [
           { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+          { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
           { icon: Briefcase, label: "My Posted Jobs", href: "/dashboard/jobs" },
           { icon: FileText, label: "Post Job / Uploads", href: "/dashboard/postAJob" },
           { icon: ClipboardList, label: "Screened Results & Shortlisting", href: "/dashboard/screening" },

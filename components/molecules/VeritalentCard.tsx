@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Download, ChevronDown, Eye, FileCheck, RefreshCw, Edit } from 'lucide-react';
+import { Download, ChevronDown, Eye, FileCheck, RefreshCw, Edit, Share2 } from 'lucide-react';
 import { TalentCardData, VeriTalentCardProps } from '@/types/dashboard';
 import { userTypes } from '@/types/user_type';
 import { profilesService } from '@/lib/services/profilesService';
-// import { usersService } from '@/lib/services/usersService';
+import { competencyService, CompetencySignal } from '@/lib/services/competencyService';
 import { useCreateUserStore } from '@/lib/stores/form_submission_store';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import RequestReferenceModal from '@/components/Dashboard/references/RequestReferenceModal';
 
 const defaultTalentData: TalentCardData = {
   name: "Loading...",
@@ -32,9 +35,28 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
   const [talentData, setTalentData] = useState<TalentCardData>(initialTalentData);
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isRequestReferenceModalOpen, setIsRequestReferenceModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [competencySignals, setCompetencySignals] = useState<CompetencySignal[]>([]);
+  const [loadingSignals, setLoadingSignals] = useState(false);
   const { user, updateUser } = useCreateUserStore();
+  
+  const fetchCompetencySignals = async () => {
+    if (!user.veritalent_id) return;
+    
+    setLoadingSignals(true);
+    try {
+      const signals = await competencyService.getCompetencySignals(user.veritalent_id);
+      setCompetencySignals(signals);
+    } catch (error) {
+      console.error('Failed to fetch competency signals:', error);
+      // Fallback to mock data for development
+      setCompetencySignals(competencyService.getMockCompetencySignals());
+    } finally {
+      setLoadingSignals(false);
+    }
+  };
   
   // Form state for editing
   const [editForm, setEditForm] = useState({
@@ -127,6 +149,8 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
       if (user.profile_fetched || (user.full_name && user.veritalent_id)) {
         console.log('[VeriTalentCard] Loading profile...');
         loadProfile();
+        // Fetch competency signals for talent users
+        fetchCompetencySignals();
       } else {
         // Still waiting for user data to be hydrated
         console.log('[VeriTalentCard] Waiting for user data...');
@@ -194,11 +218,76 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
     }
   };
 
-  const handleArrayFieldChange = (field: 'workExperience' | 'education' | 'accomplishments', index: number, value: string) => {
-    setEditForm(prev => ({
-      ...prev,
-      [field]: prev[field].map((item, i) => i === index ? value : item),
-    }));
+  const handleShareCard = async () => {
+    try {
+      // Generate shareable link (for now, create a mock share token)
+      const shareToken = `share_${user.veritalent_id}_${Date.now()}`;
+      const shareUrl = `${window.location.origin}/ai-card/public/${shareToken}`;
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      
+      // Show success message (you could add a toast notification here)
+      alert('Shareable link copied to clipboard!');
+      
+      // TODO: Call backend API to generate proper share token
+      // const response = await apiClient.post(`/ai-card/share/${user.veritalent_id}`);
+      // const shareUrl = response.data.shareUrl;
+      
+    } catch (error) {
+      console.error('Failed to generate share link:', error);
+      alert('Failed to generate share link. Please try again.');
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      // Get the card element
+      const cardElement = document.querySelector('.veritalent-card-content') as HTMLElement;
+      if (!cardElement) {
+        alert('Unable to find card content. Please try again.');
+        return;
+      }
+
+      // Create canvas from the card element
+      const canvas = await html2canvas(cardElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+      });
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      // Calculate dimensions to fit A4
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 295; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      
+      let position = 0;
+      
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      // Download the PDF
+      pdf.save(`VeriTalent_AI_Card_${user.veritalent_id || 'Profile'}.pdf`);
+      
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
   const handleAddArrayField = (field: 'workExperience' | 'education' | 'accomplishments') => {
@@ -215,6 +304,13 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
     }));
   };
 
+  const handleArrayFieldChange = (field: 'workExperience' | 'education' | 'accomplishments', index: number, value: string) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: prev[field].map((item, i) => i === index ? value : item),
+    }));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
@@ -228,20 +324,52 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
   const isTalent = userType === userTypes.TALENT;
   const isRecruiterOrOrg = userType === userTypes.INDEPENDENT_RECRUITER || userType === userTypes.ORGANISATION;
 
-  const skills = talentData.skills || [
-    { name: 'Digital Marketing', verifiedBy: 'AI + References', level: 'Advanced', color: 'bg-green-100 text-green-700' },
-    { name: 'SEO & Analytics', verifiedBy: 'Recommendation (Manager)', level: 'Advanced', color: 'bg-green-100 text-green-700' },
-    { name: 'Content Strategy', verifiedBy: 'AI', level: 'Intermediate', color: 'bg-blue-100 text-blue-700' },
-    { name: 'Communication', verifiedBy: 'AI + Reference + Certificate', level: 'Advanced', color: 'bg-green-100 text-green-700' }
+  const skills = competencySignals.length > 0 ? competencySignals.map(signal => ({
+    name: signal.skill,
+    verifiedBy: signal.verifiedBy === 'AI' ? 'AI Analysis' :
+                signal.verifiedBy === 'Reference' ? 'Professional Reference' :
+                signal.verifiedBy === 'Certificate' ? 'Verified Certificate' :
+                signal.verifiedBy === 'LPI' ? 'LPI Assessment' :
+                signal.verifiedBy === 'Experience' ? 'Work Experience' : signal.verifiedBy,
+    level: signal.level.charAt(0).toUpperCase() + signal.level.slice(1),
+    color: signal.level === 'advanced' ? 'bg-green-100 text-green-700' :
+           signal.level === 'intermediate' ? 'bg-blue-100 text-blue-700' :
+           'bg-gray-100 text-gray-700',
+    score: signal.score
+  })) : [
+    { name: 'Digital Marketing', verifiedBy: 'AI + References', level: 'Advanced', color: 'bg-green-100 text-green-700', score: 85 },
+    { name: 'SEO & Analytics', verifiedBy: 'Recommendation (Manager)', level: 'Advanced', color: 'bg-green-100 text-green-700', score: 88 },
+    { name: 'Content Strategy', verifiedBy: 'AI', level: 'Intermediate', color: 'bg-blue-100 text-blue-700', score: 72 },
+    { name: 'Communication', verifiedBy: 'AI + Reference + Certificate', level: 'Advanced', color: 'bg-green-100 text-green-700', score: 90 }
   ];
 
   return (
     <div className="flex-1 bg-gray-50 p-2 sm:p-6">
-      <div className="">
+      <div className="veritalent-card-content">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">Veritalent AI card</h1>
-          <p className="text-xs sm:text-sm text-gray-600">AI-powered Career Insights with Verifiable Credibility.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">Veritalent AI card</h1>
+              <p className="text-xs sm:text-sm text-gray-600">AI-powered Career Insights with Verifiable Credibility.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleShareCard}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                <Download className="w-4 h-4" />
+                Download PDF
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Talent Information Card */}
@@ -391,7 +519,15 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
         {/* Skills & Competency Signals - Only for Talent and Verified Recruiters/Orgs */}
         {(isTalent || (isRecruiterOrOrg && isVerified)) && (
           <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Skill & Competency Signals (AI + Verified Data)</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Skill & Competency Signals (AI + Verified Data)</h2>
+              {loadingSignals && (
+                <div className="flex items-center text-sm text-gray-500">
+                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                  Loading signals...
+                </div>
+              )}
+            </div>
             
             {/* Desktop Table View */}
             <div className="hidden md:block overflow-x-auto mb-4">
@@ -401,6 +537,7 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Skill</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Verified By</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Competency Level</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Score</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -412,6 +549,9 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
                         <span className={`inline-block px-3 py-1 rounded-md text-xs font-medium ${skill.color}`}>
                           {skill.level}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-700">
+                        {skill.score ? `${skill.score}%` : 'N/A'}
                       </td>
                     </tr>
                   ))}
@@ -425,9 +565,14 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
                 <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="text-sm font-semibold text-gray-900">{skill.name}</h3>
-                    <span className={`inline-block px-2 py-1 rounded-md text-xs font-medium ${skill.color}`}>
-                      {skill.level}
-                    </span>
+                    <div className="text-right">
+                      <span className={`inline-block px-2 py-1 rounded-md text-xs font-medium ${skill.color} mb-1`}>
+                        {skill.level}
+                      </span>
+                      {skill.score && (
+                        <div className="text-xs text-gray-500">{skill.score}%</div>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-gray-600">Verified by: {skill.verifiedBy}</p>
                 </div>
@@ -436,8 +581,13 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-xs sm:text-sm text-green-800">
-                <span className="font-medium">AI Signal Summary:</span> AI analyses CV data, verified references and activity footprints to rank competencies as Beginner / Intermediate / Advanced or percentage strength scores.
+                <span className="font-medium">AI Signal Summary:</span> Competency levels are calculated from multiple verified sources including AI CV analysis, professional references, LPI assessments, certificates, and work experience duration. Higher scores indicate stronger validation across multiple sources.
               </p>
+              {competencySignals.length > 0 && (
+                <div className="mt-2 text-xs text-green-700">
+                  <span className="font-medium">Last updated:</span> {new Date(Math.max(...competencySignals.map(s => new Date(s.lastUpdated || '2024-01-01').getTime()))).toLocaleDateString()}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -567,7 +717,9 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
                   <Edit className="w-5 h-5" />
                   <span>Edit Card</span>
                 </button>
-                <button className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium flex items-center justify-center gap-2 text-sm">
+                <button className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium flex items-center justify-center gap-2 text-sm"
+                  onClick={() => setIsRequestReferenceModalOpen(true)}
+                >
                   Request Reference
                 </button>
               </>
@@ -700,6 +852,16 @@ const VeriTalentCard: React.FC<VeriTalentCardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Request Reference Modal */}
+      <RequestReferenceModal
+        isOpen={isRequestReferenceModalOpen}
+        onClose={() => setIsRequestReferenceModalOpen(false)}
+        onSuccess={() => {
+          setIsRequestReferenceModalOpen(false);
+          // Optionally refresh data or show success message
+        }}
+      />
     </div>
   );
 };

@@ -1,15 +1,18 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, X } from 'lucide-react';
-import { referencesService } from '@/lib/services/referencesService';
+import { FileText, Plus, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { recommendationsService, IssueRecommendationDto } from '@/lib/services/recommendationsService';
 
 interface Recommendation {
+  id?: string;
   issuer: string;
   talentName: string;
+  talentEmail: string;
   dateIssued: string;
-  timeline: string;
+  relationshipTimeline: string;
   relationshipContext: string;
   recommendations: string;
+  status?: 'active' | 'revoked';
 }
 
 function RecommendationModal({ isOpen, onClose, recommendation }: { 
@@ -20,8 +23,8 @@ function RecommendationModal({ isOpen, onClose, recommendation }: {
   if (!isOpen || !recommendation) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/50 bg-opacity-50">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90dvh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 flex justify-between items-center">
           <h3 className="text-lg sm:text-xl font-semibold text-gray-900">Recommendation Details</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -39,7 +42,7 @@ function RecommendationModal({ isOpen, onClose, recommendation }: {
           </div>
           <div>
             <p className="text-xs sm:text-sm font-medium text-gray-500">Timeline</p>
-            <p className="text-sm sm:text-base text-gray-900 mt-1">{recommendation.timeline}</p>
+            <p className="text-sm sm:text-base text-gray-900 mt-1">{recommendation.relationshipTimeline}</p>
           </div>
           <div>
             <p className="text-xs sm:text-sm font-medium text-gray-500">Relationship Context</p>
@@ -67,19 +70,25 @@ export default function RecommendationIssuance() {
   const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
   const [issuedRecommendations, setIssuedRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     const fetchIssuedRecommendations = async () => {
       try {
-        const data = await referencesService.getIssued();
+        const data = await recommendationsService.getIssued();
         // Transform the data to match the interface
-        const transformed = data.map((ref: any) => ({
-          issuer: ref.issuer || 'Current User',
-          talentName: ref.talentName || ref.title,
-          dateIssued: ref.dateIssued || new Date(ref.dateSubmitted).toLocaleDateString(),
-          timeline: ref.timeline || `${ref.startDate} - ${ref.endDate}`,
-          relationshipContext: ref.relationshipContext || ref.message,
-          recommendations: ref.recommendations || ref.description,
+        const transformed = data.map((rec: any) => ({
+          id: rec.id,
+          issuer: rec.issuer || 'Current User',
+          talentName: rec.talentName,
+          talentEmail: rec.talentEmail,
+          dateIssued: rec.dateIssued || new Date(rec.createdAt).toLocaleDateString(),
+          relationshipTimeline: rec.relationshipTimeline,
+          relationshipContext: rec.relationshipContext,
+          recommendations: rec.recommendations,
+          status: rec.status || 'active',
         }));
         setIssuedRecommendations(transformed);
       } catch (error) {
@@ -95,6 +104,77 @@ export default function RecommendationIssuance() {
   const handleViewClick = (recommendation: Recommendation) => {
     setSelectedRecommendation(recommendation);
     setIsModalOpen(true);
+  };
+
+  const handleRevokeRecommendation = async (recommendationId: string) => {
+    if (!recommendationId) return;
+
+    try {
+      await recommendationsService.revoke(recommendationId);
+
+      // Update the local state to mark as revoked
+      setIssuedRecommendations(prev =>
+        prev.map(rec =>
+          rec.id === recommendationId
+            ? { ...rec, status: 'revoked' as const }
+            : rec
+        )
+      );
+    } catch (error: any) {
+      console.error('Failed to revoke recommendation:', error);
+      // You could add error handling UI here
+    }
+  };
+
+  const handleSubmitRecommendation = async () => {
+    if (!talentName.trim() || !talentEmail.trim() || !recommendations.trim()) {
+      setSubmitError('Please fill in all required fields');
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitSuccess(false);
+
+    try {
+      const recommendationData: IssueRecommendationDto = {
+        talentName: talentName.trim(),
+        talentEmail: talentEmail.trim(),
+        relationshipTimeline,
+        relationshipContext,
+        recommendations: recommendations.trim(),
+      };
+
+      await recommendationsService.issue(recommendationData);
+
+      // Reset form
+      setTalentName('');
+      setTalentEmail('');
+      setRelationshipTimeline('2021 - 2025');
+      setRelationshipContext('I was his direct supervisor at Nestle.');
+      setRecommendations('');
+      setSubmitSuccess(true);
+
+      // Refresh the list
+      const data = await recommendationsService.getIssued();
+      const transformed = data.map((rec: any) => ({
+        id: rec.id,
+        issuer: rec.issuer || 'Current User',
+        talentName: rec.talentName,
+        talentEmail: rec.talentEmail,
+        dateIssued: rec.dateIssued || new Date(rec.createdAt).toLocaleDateString(),
+        relationshipTimeline: rec.relationshipTimeline,
+        relationshipContext: rec.relationshipContext,
+        recommendations: rec.recommendations,
+        status: rec.status || 'active',
+      }));
+      setIssuedRecommendations(transformed);
+
+    } catch (error: any) {
+      setSubmitError(error.response?.data?.message || 'Failed to submit recommendation');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -252,8 +332,24 @@ export default function RecommendationIssuance() {
 
               {/* Submit Button */}
               <div className="flex justify-end">
-                <button className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium text-sm sm:text-base">
-                  Submit for Reference
+                {submitSuccess && (
+                  <div className="flex items-center gap-2 text-green-600 mr-4">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">Recommendation submitted successfully!</span>
+                  </div>
+                )}
+                {submitError && (
+                  <div className="flex items-center gap-2 text-red-600 mr-4">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">{submitError}</span>
+                  </div>
+                )}
+                <button
+                  onClick={handleSubmitRecommendation}
+                  disabled={submitting || !talentName.trim() || !talentEmail.trim() || !recommendations.trim()}
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+                >
+                  {submitting ? 'Submitting...' : 'Submit for Reference'}
                 </button>
               </div>
             </div>
@@ -346,8 +442,24 @@ export default function RecommendationIssuance() {
 
               {/* Submit Button */}
               <div className="flex justify-end">
-                <button className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium text-sm sm:text-base">
-                  Submit for Reference
+                {submitSuccess && (
+                  <div className="flex items-center gap-2 text-green-600 mr-4">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">Recommendation submitted successfully!</span>
+                  </div>
+                )}
+                {submitError && (
+                  <div className="flex items-center gap-2 text-red-600 mr-4">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">{submitError}</span>
+                  </div>
+                )}
+                <button
+                  onClick={handleSubmitRecommendation}
+                  disabled={submitting || !talentName.trim() || !talentEmail.trim() || !recommendations.trim()}
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium text-sm sm:text-base"
+                >
+                  {submitting ? 'Submitting...' : 'Submit for Reference'}
                 </button>
               </div>
             </div>
@@ -376,8 +488,12 @@ export default function RecommendationIssuance() {
                     >
                       View
                     </button>
-                    <button className="flex-1 text-sm text-red-600 hover:text-red-700 font-medium py-2 border border-red-600 rounded-lg">
-                      Revoke
+                    <button
+                      onClick={() => handleRevokeRecommendation(rec.id!)}
+                      disabled={rec.status === 'revoked'}
+                      className="flex-1 text-sm text-red-600 hover:text-red-700 font-medium py-2 border border-red-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {rec.status === 'revoked' ? 'Revoked' : 'Revoke'}
                     </button>
                   </div>
                 </div>
@@ -417,8 +533,12 @@ export default function RecommendationIssuance() {
                           >
                             View
                           </button>
-                          <button className="text-xs sm:text-sm text-red-600 hover:text-red-700 font-medium">
-                            Revoke
+                          <button
+                            onClick={() => handleRevokeRecommendation(rec.id!)}
+                            disabled={rec.status === 'revoked'}
+                            className="text-xs sm:text-sm text-red-600 hover:text-red-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {rec.status === 'revoked' ? 'Revoked' : 'Revoke'}
                           </button>
                         </div>
                       </td>

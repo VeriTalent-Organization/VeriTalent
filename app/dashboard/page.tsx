@@ -18,14 +18,7 @@ export default function DashboardPage() {
   ]);
   const [jobRoles, setJobRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
   const { user } = useCreateUserStore();
-
-  useEffect(() => {
-    if (user.user_type === userTypes.TALENT) {
-      router.replace("/dashboard/ai-card");
-    }
-  }, [user.user_type, router]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,14 +45,8 @@ export default function DashboardPage() {
         setLoading(false);
       }
     };
-    if (user.user_type !== userTypes.TALENT) {
-      fetchData();
-    }
-  }, [user.user_type]);
-
-  if (user.user_type === userTypes.TALENT) {
-    return null;
-  }
+    fetchData();
+  }, []);
 
   if (loading) {
     return (

@@ -49,8 +49,8 @@ export default function BulkInterviewScheduleCompact({ onClose }: BulkInterviewS
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-end justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center p-4 z-[10000]">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-full sm:max-w-3xl max-h-[90dvh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center bg-white justify-between sticky top-0 p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">

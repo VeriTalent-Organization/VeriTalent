@@ -1,6 +1,7 @@
-import { X } from 'lucide-react';
 import React, { useState } from 'react'
 import { Request } from '@/types/dashboard';
+import { Spinner } from '@/components/ui/spinner';
+import Modal from '@/components/ui/modal';
 
 interface MembershipReferenceModalProps {
   requestData?: Request;
@@ -14,60 +15,95 @@ const MembershipReferenceModal = ({
   requestData 
 }: MembershipReferenceModalProps) => {
   const [declineReason, setDeclineReason] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isRevoking, setIsRevoking] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isRequestingUpdate, setIsRequestingUpdate] = useState(false);
 
-  const handleApprove = () => {
-    console.log("Approved", requestData);
-    onClose();
+  const handleApprove = async () => {
+    setIsUpdating(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Approved", requestData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onClose();
+    } catch (error) {
+      console.error("Failed to update:", error);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
-  const handleDecline = () => {
-    console.log("Declined with reason:", declineReason, requestData);
-    onClose();
+  const handleDecline = async () => {
+    setIsRevoking(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Declined with reason:", declineReason, requestData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onClose();
+    } catch (error) {
+      console.error("Failed to revoke:", error);
+    } finally {
+      setIsRevoking(false);
+    }
   };
 
-  const handleShare = () => {
-    console.log("Share reference", requestData);
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Share reference", requestData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Failed to share:", error);
+    } finally {
+      setIsSharing(false);
+    }
   };
 
-  const handleDownload = () => {
-    console.log("Download reference", requestData);
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Download reference", requestData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Failed to download:", error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleRequestUpdate = async () => {
+    setIsRequestingUpdate(true);
+    try {
+      // TODO: Replace with actual API call
+      console.log("Request update", requestData);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Failed to request update:", error);
+    } finally {
+      setIsRequestingUpdate(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end p-2 md:p-4 justify-center">
-      {/* Backdrop click closes modal */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-      />
-
-      {/* Modal Container */}
-      <div
-        className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[87vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between sticky top-0 p-2 md:p-6 border-b bg-white">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Membership Reference</h2>
-            <span className="text-sm text-brand-primary font-medium">Active</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Membership Reference"
+      size="lg"
+      position="bottom"
+    >
+      {/* Modal Body */}
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Status Badge */}
+        <div className="flex justify-end">
+          <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-sm rounded-full font-medium">
+            Verified Fully
+          </span>
         </div>
-
-        {/* Modal Body */}
-        <div className="p-2 md:p-6 space-y-6">
-          {/* Status Badge */}
-          <div className="flex justify-end">
-            <span className="px-3 py-1 bg-cyan-100 text-cyan-700 text-sm rounded-full font-medium">
-              Verified Fully
-            </span>
-          </div>
 
           {/* Issuer and Talent Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -155,19 +191,23 @@ const MembershipReferenceModal = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex gap-3 p-2 md:p-6 border-t sticky bottom-0 bg-white">
+        <div className="flex gap-3 p-2 md:p-6 border-t bg-white">
           {viewMode === "organization" ? (
             <>
               <button 
                 onClick={handleApprove}
-                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                disabled={isUpdating || isRevoking}
+                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isUpdating && <Spinner className="text-white" />}
                 Update
               </button>
               <button 
                 onClick={handleDecline}
-                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                disabled={isUpdating || isRevoking}
+                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isRevoking && <Spinner className="text-white" />}
                 Revoke
               </button>
             </>
@@ -175,26 +215,32 @@ const MembershipReferenceModal = ({
             <>
               <button 
                 onClick={handleShare}
-                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                disabled={isSharing}
+                className="flex-1 px-2 md:px-6 py-2.5 text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isSharing && <Spinner className="text-white" />}
                 Share
               </button>
               <button 
                 onClick={handleDownload}
-                className="flex-1 px-2 md:px-6 text-sm py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                disabled={isDownloading}
+                className="flex-1 px-2 md:px-6 text-sm py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isDownloading && <Spinner className="text-white" />}
                 Download
               </button>
               <button 
-                className="flex-1 px-2 text-sm md:px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                onClick={handleRequestUpdate}
+                disabled={isRequestingUpdate}
+                className="flex-1 px-2 text-sm md:px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isRequestingUpdate && <Spinner className="text-white" />}
                 Request Update
               </button>
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }
 

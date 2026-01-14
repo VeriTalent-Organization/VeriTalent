@@ -7,6 +7,7 @@ import { removeAuthTokenCookie } from "@/lib/utils/cookieUtils";
 
 export interface User {
   user_type: userTypes;
+  active_role?: 'talent' | 'recruiter' | 'org_admin';
   available_roles?: ('talent' | 'recruiter' | 'org_admin')[]; // All roles user has access to
 
   // Common
@@ -35,6 +36,10 @@ export interface User {
   linked_emails?: string[];
   linkedin_connected?: boolean;
   cv_uploaded?: boolean;
+  cv_file?: File;
+  cv_source?: 'upload' | 'linkedin';
+  cv_parsed?: boolean;
+  parsed_cv_data?: any; // Will be ParsedCVData type from cvParsingService
   talentProfile?: {
     _id?: string;
     user?: string;
@@ -64,17 +69,18 @@ export interface User {
   primary_email?: string;
   location?: string;
   roles?: ('talent' | 'recruiter' | 'org_admin')[];
-  active_role?: 'talent' | 'recruiter' | 'org_admin';
   profile_fetched?: boolean; // Flag to track if profile has been fetched
   is_switching_role?: boolean; // Flag to prevent redirect during role switch
 }
 
 interface UserStore {
   user: User; // Always an object during onboarding and after login
+  _hasHydrated: boolean; // Track if store has hydrated from localStorage
   setUser: (data: Partial<User> | User) => void;
   updateUser: (data: Partial<User>) => void;
   logout: () => void;
   resetForm: () => void;
+  setHasHydrated: (state: boolean) => void;
 }
 
 const initialFormState: User = {
@@ -94,6 +100,13 @@ const initialFormState: User = {
   organisation_rc_number: "",
   organisation_industry: "",
   organisation_location: "",
+  veritalent_id: "",
+  linked_emails: [],
+  linkedin_connected: false,
+  cv_uploaded: false,
+  cv_source: undefined,
+  cv_parsed: false,
+  parsed_cv_data: undefined,
   token: null,
 };
 
@@ -101,6 +114,7 @@ export const useCreateUserStore = create<UserStore>()(
   persist(
     (set) => ({
       user: initialFormState,
+      _hasHydrated: false,
       setUser: (data) =>
         set(() => ({
           user: { ...initialFormState, ...(data as Partial<User>) },
@@ -127,9 +141,17 @@ export const useCreateUserStore = create<UserStore>()(
             email: state.user.email,
           },
         })),
+      setHasHydrated: (state: boolean) => {
+        set({
+          _hasHydrated: state,
+        });
+      },
     }),
     {
       name: "veritalent-user-storage",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
       // ✅ Correct storage type for TypeScript
       storage: {
         getItem: (name: string) => {

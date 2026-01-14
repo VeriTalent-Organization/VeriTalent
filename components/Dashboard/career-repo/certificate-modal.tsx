@@ -1,39 +1,37 @@
-import { X } from 'lucide-react';
-import React from 'react'
+import React, { useState } from 'react'
+import { Spinner } from '@/components/ui/spinner';
+import Modal from '@/components/ui/modal';
 
 interface CertificateModalProps {
   onClose: () => void;
 }
 
 const CertificateModal = ({ onClose }: CertificateModalProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleEdit = async () => {
+    setIsEditing(true);
+    try {
+      // TODO: Replace with actual API call or navigation to edit page
+      console.log("Edit certificate");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Failed to edit:", error);
+    } finally {
+      setIsEditing(false);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end p-4 justify-center">
-      {/* Backdrop click closes modal */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-      />
-
-      {/* Modal Container */}
-      <div
-        className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[87vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between sticky top-0 p-6 border-b">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Certificate</h2>
-            <span className="text-sm text-gray-500">Listing</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        {/* Modal Body */}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Certificate"
+      size="lg"
+      position="bottom"
+    >
+      {/* Modal Body */}
+      <div className="p-4 sm:p-6">        {/* Modal Body */}
         <div className="p-6 space-y-6">
           {/* Status Badge */}
           <div className="flex justify-end">
@@ -98,12 +96,17 @@ const CertificateModal = ({ onClose }: CertificateModalProps) => {
 
         {/* Modal Footer */}
         <div className="flex justify-end p-6 border-t sticky bottom-0 bg-gray-50">
-          <button className="px-8 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium">
+          <button 
+            onClick={handleEdit}
+            disabled={isEditing}
+            className="px-8 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            {isEditing && <Spinner className="text-white" />}
             Edit
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 

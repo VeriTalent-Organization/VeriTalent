@@ -8,11 +8,12 @@ interface EmployerProfileStepProps {
   onNext: () => void;
   onBack?: () => void;
   isFinalStep?: boolean;  // True only when this is the very last step
+  inModal?: boolean;  // True when displayed in RoleSwitchOnboardingModal
 }
 
 const EmployerProfileStep: React.FC<EmployerProfileStepProps> & {
   hideParentButtons: boolean;
-} = ({ onNext, onBack, isFinalStep = false }) => {
+} = ({ onNext, onBack, isFinalStep = false, inModal = false }) => {
   const { user, updateUser } = useCreateUserStore();
 
   const handleSubmit = (data: Record<string, string>) => {
@@ -90,14 +91,16 @@ const EmployerProfileStep: React.FC<EmployerProfileStepProps> & {
 
   return (
     <div className="flex items-center justify-center flex-col gap-6 sm:gap-8 px-4 sm:px-6 py-6 sm:py-8">
-      <div className="text-center max-w-xl w-full">
-        <Text as="h1" variant="Heading" className="text-xl sm:text-2xl md:text-3xl">
-          Complete Your Employer Profile
-        </Text>
-        <Text as="p" variant="SubText" className="mt-2 text-sm sm:text-base text-gray-600 px-4 sm:px-0">
-          Complete your profile and start posting jobs, screening candidates and so on.
-        </Text>
-      </div>
+      {!inModal && (
+        <div className="text-center max-w-xl w-full">
+          <Text as="h1" variant="SubHeadings" className="text-xl sm:text-2xl md:text-3xl">
+            Complete Your Employer Profile
+          </Text>
+          <Text as="p" variant="SubText" className="mt-2 text-sm sm:text-base text-gray-600 px-4 sm:px-0">
+            Complete your profile and start posting jobs, screening candidates and so on.
+          </Text>
+        </div>
+      )}
 
       <div className="w-full max-w-md px-4 sm:px-0">
         <FormComponent

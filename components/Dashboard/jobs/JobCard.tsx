@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { MapPin, Clock, Briefcase, ChevronRight, TrendingUp, Check, Sparkles } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 interface Job {
   id: string;
@@ -36,20 +37,6 @@ export default function JobCard({ job, showMatchScore = false, onApply }: JobCar
     } finally {
       setApplying(false);
     }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Recently';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return `${Math.floor(diffDays / 30)} months ago`;
   };
 
   const getMatchScoreColor = (score: number) => {
@@ -107,7 +94,7 @@ export default function JobCard({ job, showMatchScore = false, onApply }: JobCar
               )}
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                <span>{formatDate(job.postedAt)}</span>
+                <span>{formatDate(job.postedAt, { relative: true })}</span>
               </div>
             </div>
 

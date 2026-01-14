@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Sidebar from "@/components/Dashboard/sidebar";
 import DashboardHeader from "@/components/Dashboard/header";
+import RoleRouteGuard from "@/components/guards/RoleRouteGuard";
 
 interface DashboardClientWrapperProps {
   children: React.ReactNode;
@@ -17,6 +18,7 @@ export default function DashboardClientWrapper({ children }: DashboardClientWrap
 
   return (
     <div className="flex h-screen bg-gray-50">
+      <RoleRouteGuard />
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       <div className="flex-1 overflow-auto">
         <DashboardHeader onMenuClick={() => setIsSidebarOpen(true)} />

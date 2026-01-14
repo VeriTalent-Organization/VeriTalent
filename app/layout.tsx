@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import StoreHydration from "@/components/layout/StoreHydration";
-import { serverUsersService } from "@/lib/services/serverApiClient";
-import type { UserMeResponseDto } from "@/lib/services/usersService";
 
 export const metadata: Metadata = {
   title: {
@@ -47,9 +45,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch user profile on server side
-  const userDataResponse = await serverUsersService.getMe();
-  const userData = (userDataResponse?.success ? userDataResponse.data : null) as UserMeResponseDto | null;
+  // Remove server-side user fetching - this should be handled in dashboard layout
+  // where authentication is actually required
 
   return (
     <html lang="en">
@@ -73,8 +70,8 @@ export default async function RootLayout({
           Skip to main content
         </a>
         
-        {/* Hydrate client-side store with server-fetched user data */}
-        <StoreHydration userData={userData} />
+        {/* Store hydration without server data - client will handle auth state */}
+        <StoreHydration userData={null} />
 
         {children}
 

@@ -8,6 +8,8 @@ import { Mail, Lock } from "lucide-react";
 import Image from "next/image";
 import Icons from "@/lib/configs/icons.config";
 import { authService } from "@/lib/services/authService";
+import { useCreateUserStore } from "@/lib/stores/form_submission_store";
+import { userTypes } from "@/types/user_type";
 
 interface LoginPageProps {
   onLoginSuccess?: () => void;
@@ -17,6 +19,7 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onShowRegister }) => {
   const router = useRouter();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const loginFields = [
     {
@@ -49,18 +52,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onShowRegister })
 
   const handleLogin = async (data: Record<string, string>) => {
     setErrorMessage(null);
+    setIsLoggingIn(true);
+    
     try {
       await authService.login({ email: data.email, password: data.password });
       console.log("Login successful");
 
+      // Trigger callback to notify parent component
+      // Redirect will be handled by app/page.tsx useEffect
       if (onLoginSuccess) {
         onLoginSuccess();
-      } else {
-        router.push("/dashboard");
       }
     } catch (error) {
       console.error("Login failed:", error);
       setErrorMessage("Login failed. Please check your credentials and try again.");
+      setIsLoggingIn(false);
     }
   };
 
@@ -80,11 +86,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, onShowRegister })
         {/* Login Form */}
         <FormComponent
           fields={loginFields}
-          submitButtonText="Login"
-          submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold py-6 rounded-lg text-lg transition shadow-md hover:shadow-lg"
+          submitButtonText={isLoggingIn ? "Logging in..." : "Login"}
+          submitButtonStyle="w-full bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold py-6 rounded-lg text-lg transition shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           formType="login"
           submitFunction={handleLogin}
           classNames="space-y-7"
+          isSubmitting={isLoggingIn}
         />
 
         {errorMessage && (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, Eye, AlertCircle } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 interface Application {
   id: string;
@@ -102,15 +103,6 @@ export default function ApplicationsTracker() {
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
   };
 
   const filteredApplications = filter === 'all' 

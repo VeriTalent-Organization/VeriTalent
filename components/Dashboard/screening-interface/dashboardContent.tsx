@@ -2,9 +2,12 @@
 import React, { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { jobsService } from '@/lib/services/jobsService';
+import { screeningService } from '@/lib/services/screeningService';
 import SchedulingModal from './schedulingModal';
 import CandidateSelectionModal from './candidateSelectionModal';
 import BulkInterviewScheduleCompact from './bulkInterviewScheduleModal';
+import ApplicantAICardView from './ApplicantAICardView';
+import EvaluationNotesModal from './EvaluationNotesModal';
 
 interface JobData {
   id: string;
@@ -26,34 +29,20 @@ type PendingAction = {
   list: 'shortlist' | 'post' | 'bulk';
 };
 
-// Mock VeriTalent AI Card component
-function VeriTalentAICard() {
-  return (
-    <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-4 sm:p-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">VeriTalent AI Card</h2>
-        <p className="text-gray-600">Candidate details would be displayed here...</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-        >
-          Back to Dashboard
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function DashboardContent() {
   const [activeTab, setActiveTab] = useState('shortlist');
   const [jobId, setJobId] = useState('');
   const [jobData, setJobData] = useState<JobData | null>(null);
   const [viewMode, setViewMode] = useState<"dashboard" | "ai-card">("dashboard");
+  const [selectedApplicant, setSelectedApplicant] = useState<{id: string, name: string, veritalentId?: string} | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortOption, setSortOption] = useState<'fit-desc' | 'name-asc'>('fit-desc');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'rejected'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [creatingSession, setCreatingSession] = useState(false);
+  const [createdSession, setCreatedSession] = useState<any | null>(null);
+  const [sessionDetail, setSessionDetail] = useState<any | null>(null);
   const [shortlistCandidates, setShortlistCandidates] = useState<ShortlistCandidate[]>([
     { id: '1', name: 'Sam Sulek', fitScore: 60, status: 'shortlisted' },
     { id: '2', name: 'Pariola Ajayi', fitScore: 57, status: 'shortlisted' },
@@ -69,6 +58,8 @@ export default function DashboardContent() {
   const [showScheduling, setShowScheduling] = useState(false);
   const [showCandidateSelection, setShowCandidateSelection] = useState(false);
   const [showBulkSchedule, setShowBulkSchedule] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedCandidateForNotes, setSelectedCandidateForNotes] = useState<{id: string, name: string} | null>(null);
 
   const shortlistView = useMemo(() => {
     const base = shortlistCandidates
@@ -157,8 +148,58 @@ export default function DashboardContent() {
     }
   };
 
-  if (viewMode === "ai-card") {
-    return <VeriTalentAICard />;
+  const handleCreateSession = async () => {
+    if (!jobData) {
+      setActionMessage('Select a job or fetch job data first.');
+      return;
+    }
+
+    setCreatingSession(true);
+    setActionMessage(null);
+
+    try {
+      const payload = {
+        title: `Screening - ${jobData.id}`,
+        jobId: jobData.id,
+        talentIds: []
+      };
+
+      const res = await screeningService.createSession(payload);
+      setCreatedSession(res);
+      setActionMessage(`Created screening session ${res.id || res.sessionId || 'created'}`);
+    } catch (err) {
+      console.error('Failed to create screening session:', err);
+      setActionMessage('Failed to create screening session');
+    } finally {
+      setCreatingSession(false);
+    }
+  };
+
+  const handleViewSession = async () => {
+    const sessionId = createdSession?.id || createdSession?.sessionId;
+    if (!sessionId) return;
+
+    try {
+      const detail = await screeningService.getSession(sessionId);
+      setSessionDetail(detail);
+      setActionMessage(`Loaded session ${sessionId}`);
+    } catch (err) {
+      console.error('Failed to load session:', err);
+      setActionMessage('Failed to load session details');
+    }
+  };
+
+  if (viewMode === "ai-card" && selectedApplicant) {
+    return (
+      <ApplicantAICardView
+        veritalentId={selectedApplicant.veritalentId || selectedApplicant.id}
+        applicantName={selectedApplicant.name}
+        onBack={() => {
+          setViewMode("dashboard");
+          setSelectedApplicant(null);
+        }}
+      />
+    );
   }
 
   return (
@@ -181,6 +222,18 @@ export default function DashboardContent() {
             setShowCandidateSelection(false);
             setShowScheduling(true);
           }} />
+        )}
+        {showNotesModal && selectedCandidateForNotes && (
+          <EvaluationNotesModal
+            isOpen={showNotesModal}
+            onClose={() => {
+              setShowNotesModal(false);
+              setSelectedCandidateForNotes(null);
+            }}
+            applicantId={selectedCandidateForNotes.id}
+            applicantName={selectedCandidateForNotes.name}
+            jobId={jobId}
+          />
         )}
         {/* Job ID Section */}
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
@@ -238,6 +291,31 @@ export default function DashboardContent() {
               <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-700">No. Interviewed</span>
                 <span className="text-xl sm:text-2xl font-bold text-gray-900">{jobData.noInterviewed}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={handleCreateSession}
+              disabled={!jobData || creatingSession}
+              className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              {creatingSession ? 'Creating...' : 'Create Screening Session'}
+            </button>
+
+            {createdSession && (
+              <button
+                onClick={handleViewSession}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                View Session
+              </button>
+            )}
+
+            {sessionDetail && (
+              <div className="ml-4 text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded">
+                Session: {sessionDetail.title || sessionDetail.id || 'Session'} {sessionDetail.candidates ? `• ${sessionDetail.candidates.length} candidates` : ''}
               </div>
             )}
           </div>
@@ -336,6 +414,9 @@ export default function DashboardContent() {
                         VeriTalent AI Card
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                        Notes
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                         Select & Action
                       </th>
                     </tr>
@@ -351,10 +432,24 @@ export default function DashboardContent() {
                         </td>
                         <td className="px-6 py-4">
                           <button
-                            onClick={() => setViewMode('ai-card')}
+                            onClick={() => {
+                              setSelectedApplicant({ id: candidate.id, name: candidate.name });
+                              setViewMode('ai-card');
+                            }}
                             className="text-sm text-brand-primary hover:text-cyan-700 font-medium"
                           >
                             View
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => {
+                              setSelectedCandidateForNotes({ id: candidate.id, name: candidate.name });
+                              setShowNotesModal(true);
+                            }}
+                            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                          >
+                            Notes
                           </button>
                         </td>
                         <td className="px-6 py-4">
@@ -381,16 +476,28 @@ export default function DashboardContent() {
                         <p className="text-xs text-gray-500 mt-1">Fit Score: {candidate.fitScore}%</p>
                       </div>
                     </div>
-                    <div className="flex gap-2 pt-2">
+                    <div className="grid grid-cols-3 gap-2 pt-2">
                       <button
-                        onClick={() => setViewMode('ai-card')}
-                        className="flex-1 px-3 py-2 text-sm text-brand-primary border border-brand-primary rounded-lg hover:bg-cyan-50 font-medium"
+                        onClick={() => {
+                          setSelectedApplicant({ id: candidate.id, name: candidate.name });
+                          setViewMode('ai-card');
+                        }}
+                        className="px-3 py-2 text-sm text-brand-primary border border-brand-primary rounded-lg hover:bg-cyan-50 font-medium"
                       >
                         View AI Card
                       </button>
                       <button
+                        onClick={() => {
+                          setSelectedCandidateForNotes({ id: candidate.id, name: candidate.name });
+                          setShowNotesModal(true);
+                        }}
+                        className="px-3 py-2 text-sm text-purple-600 border border-purple-600 rounded-lg hover:bg-purple-50 font-medium"
+                      >
+                        Notes
+                      </button>
+                      <button
                         onClick={() => openAction({ type: 'schedule', candidateId: candidate.id, candidateName: candidate.name, list: 'shortlist' })}
-                        className="flex-1 px-3 py-2 text-sm text-white bg-brand-primary rounded-lg hover:bg-cyan-700 font-medium"
+                        className="px-3 py-2 text-sm text-white bg-brand-primary rounded-lg hover:bg-cyan-700 font-medium"
                       >
                         Schedule
                       </button>
@@ -425,6 +532,9 @@ export default function DashboardContent() {
                         VeriTalent AI Card
                       </th>
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                        Notes
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                         Action
                       </th>
                     </tr>
@@ -451,10 +561,24 @@ export default function DashboardContent() {
                         </td>
                         <td className="px-6 py-4">
                           <button
-                            onClick={() => setViewMode("ai-card")}
+                            onClick={() => {
+                              setSelectedApplicant({ id: candidate.id, name: candidate.name });
+                              setViewMode("ai-card");
+                            }}
                             className="text-sm text-brand-primary hover:text-cyan-700 font-medium"
                           >
                             View
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => {
+                              setSelectedCandidateForNotes({ id: candidate.id, name: candidate.name });
+                              setShowNotesModal(true);
+                            }}
+                            className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                          >
+                            Notes
                           </button>
                         </td>
                         <td className="px-6 py-4">
@@ -489,18 +613,30 @@ export default function DashboardContent() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 pt-2">
-                      <div className="flex gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         <button
                           onClick={() => openAction({ type: 'download', candidateId: candidate.id, candidateName: candidate.name, list: 'post' })}
-                          className="flex-1 px-3 py-2 text-sm text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 font-medium"
+                          className="px-3 py-2 text-sm text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 font-medium"
                         >
                           Download Report
                         </button>
                         <button
-                          onClick={() => setViewMode("ai-card")}
-                          className="flex-1 px-3 py-2 text-sm text-brand-primary border border-brand-primary rounded-lg hover:bg-cyan-50 font-medium"
+                          onClick={() => {
+                            setSelectedApplicant({ id: candidate.id, name: candidate.name });
+                            setViewMode("ai-card");
+                          }}
+                          className="px-3 py-2 text-sm text-brand-primary border border-brand-primary rounded-lg hover:bg-cyan-50 font-medium"
                         >
                           View AI Card
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedCandidateForNotes({ id: candidate.id, name: candidate.name });
+                            setShowNotesModal(true);
+                          }}
+                          className="px-3 py-2 text-sm text-purple-600 border border-purple-600 rounded-lg hover:bg-purple-50 font-medium"
+                        >
+                          Notes
                         </button>
                       </div>
                       <button

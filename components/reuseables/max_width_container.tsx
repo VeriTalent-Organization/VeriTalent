@@ -20,7 +20,7 @@ const MaxWidthContainer: React.FC<MaxWidthContainerProps> = ({
   return (
     <div
       className={cn(
-        'mx-auto w-full',
+        'mx-auto w-full pb-10',
         paddingX === 'none' ? '' : `${paddingX} sm:${paddingX.replace('px-', 'px-')} md:px-8`,
         large ? 'max-w-7xl' : 'max-w-5xl', // 1280px or 1024px
         className

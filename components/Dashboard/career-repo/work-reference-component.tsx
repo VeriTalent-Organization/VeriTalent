@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import FormComponent from '@/components/forms/form';
+import { Spinner } from '@/components/ui/spinner';
 
 interface WorkReferenceProps {
   onSubmit?: (data: WorkReferenceData) => void;
@@ -28,6 +29,7 @@ interface WorkReferenceData {
 export default function WorkReferenceComponent({ onSubmit, onCancel }: WorkReferenceProps) {
   const [issuerOption, setIssuerOption] = useState<'search' | 'not-found'>('search');
   const [issuerSearch, setIssuerSearch] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formFields = [
     // Organization Details Section
@@ -126,14 +128,23 @@ export default function WorkReferenceComponent({ onSubmit, onCancel }: WorkRefer
     },
   ];
 
-  const handleFormSubmit = (data: Record<string, string>) => {
-    const fullData: WorkReferenceData = {
-      ...data,
-      issuerOption,
-      issuerSearch,
-    } as WorkReferenceData;
-    
-    onSubmit?.(fullData);
+  const handleFormSubmit = async (data: Record<string, string>) => {
+    setIsSubmitting(true);
+    try {
+      const fullData: WorkReferenceData = {
+        ...data,
+        issuerOption,
+        issuerSearch,
+      } as WorkReferenceData;
+      
+      // TODO: Replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      onSubmit?.(fullData);
+    } catch (error) {
+      console.error('Failed to submit work reference:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -196,6 +207,7 @@ export default function WorkReferenceComponent({ onSubmit, onCancel }: WorkRefer
         submitButtonPosition="right"
         submitButtonStyle="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
         submitFunction={handleFormSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

@@ -10,10 +10,10 @@ export default function VeriTalentAICard() {
 
   // TODO: Replace with real data from profiles API for specific talent
   const skills = [
-    { name: 'Digital Marketing', verifiedBy: 'AI + References', level: 'Advanced', color: 'bg-green-100 text-green-700' },
-    { name: 'SEO & Analytics', verifiedBy: 'Recommendation (Manager)', level: 'Advanced', color: 'bg-green-100 text-green-700' },
-    { name: 'Content Strategy', verifiedBy: 'AI', level: 'Intermediate', color: 'bg-blue-100 text-blue-700' },
-    { name: 'Communication', verifiedBy: 'AI + Reference + Certificate', level: 'Advanced', color: 'bg-green-100 text-green-700' }
+    { name: 'Digital Marketing', verifiedBy: 'AI + References', level: 'Advanced', color: 'bg-green-100 text-green-700', score: 85 },
+    { name: 'SEO & Analytics', verifiedBy: 'Recommendation (Manager)', level: 'Advanced', color: 'bg-green-100 text-green-700', score: 88 },
+    { name: 'Content Strategy', verifiedBy: 'AI', level: 'Intermediate', color: 'bg-blue-100 text-blue-700', score: 72 },
+    { name: 'Communication', verifiedBy: 'AI + Reference + Certificate', level: 'Advanced', color: 'bg-green-100 text-green-700', score: 90 }
   ];
 
   return (
@@ -174,6 +174,7 @@ export default function VeriTalentAICard() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Skill</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Verified By</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Competency Level</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,6 +187,9 @@ export default function VeriTalentAICard() {
                         {skill.level}
                       </span>
                     </td>
+                    <td className="px-4 py-4 text-sm text-gray-700">
+                      {skill.score ? `${skill.score}%` : 'N/A'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -194,7 +198,7 @@ export default function VeriTalentAICard() {
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <p className="text-sm text-green-800">
-              <span className="font-medium">AI Signal Summary:</span> AI analyses CV data, verified references and activity footprints to rank competencies as Beginner / Intermediate / Advanced or percentage strength scores.
+              <span className="font-medium">AI Signal Summary:</span> Competency levels are calculated from multiple verified sources including AI CV analysis, professional references, LPI assessments, certificates, and work experience duration. Higher scores indicate stronger validation across multiple sources.
             </p>
           </div>
         </div>

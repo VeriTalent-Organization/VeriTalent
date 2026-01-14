@@ -176,7 +176,7 @@ const RegistrationFormStep: React.FC<RegistrationFormStepProps> & {
   return (
     <div className="flex items-center justify-center flex-col gap-6 sm:gap-8 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       <div className="text-center max-w-3xl">
-        <Text as="h1" variant="Heading" className="text-2xl sm:text-3xl lg:text-4xl">
+        <Text as="h1" variant="SubHeadings" className="text-2xl sm:text-3xl lg:text-4xl">
           Join <span className="text-brand-primary">VeriTalent</span>
         </Text>
         <Text

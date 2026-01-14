@@ -13,12 +13,13 @@ import EmployerProfileStep from '@/components/layout/onboarding/employer_from_st
 import OrganizationRegistrationFormStep from '@/components/layout/onboarding/orginisation_registration_form'
 import OrganizationDetailsFormStep from '@/components/layout/onboarding/organisation_registration_form2'
 import VerificationProgress from '@/components/layout/onboarding/verificationProgress'
-import LoginPage from '@/components/layout/onboarding/login'
+import PostLoginRoleSelection from '@/components/layout/onboarding/post_login_role_selection'
 import Icons from '@/lib/configs/icons.config'
 import { useCreateUserStore } from '@/lib/stores/form_submission_store'
 import { userTypes } from '@/types/user_type'
 import { authService, RegisterDto } from '@/lib/services/authService'
 import { Text } from '@/components/reuseables/text'
+import { Spinner } from '@/components/ui/spinner'
 
 type OnboardingStepProps = {
   onNext: () => void
@@ -32,20 +33,36 @@ type OnboardingStepComponent = React.FC<OnboardingStepProps> & {
 
 const Home = () => {
   const router = useRouter()
-  const { user } = useCreateUserStore()
+  const { user, _hasHydrated } = useCreateUserStore()
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const hasRedirected = React.useRef(false)
 
-  // Redirect already-authenticated users
+  // Redirect already-authenticated users (wait for hydration AND active_role from server)
   useEffect(() => {
-    if (user?.token) {
-      router.replace('/dashboard')
+    if (!_hasHydrated) return; // Wait for store to hydrate
+    
+    // Wait for both token AND available_roles (which comes from login)
+    if (user?.token && user?.available_roles && !hasRedirected.current) {
+      hasRedirected.current = true;
+      
+      // Check if user has multiple roles and no active_role set
+      if (user.available_roles.length > 1 && !user.active_role) {
+        console.log('[app/page] User has multiple roles, showing role selection');
+        setShowPostLoginRoleSelection(true);
+        return;
+      }
+      
+      // User has single role or active_role already set, redirect normally
+      const dashboardRoute = user.active_role === 'talent' ? '/dashboard/ai-card' : '/dashboard';
+      console.log('[app/page] Redirecting authenticated user to:', dashboardRoute, { active_role: user.active_role });
+      router.replace(dashboardRoute);
     }
-  }, [user?.token, router])
+  }, [user?.token, user?.active_role, user?.available_roles, _hasHydrated, router])
 
-  // Always show login as first step
   const [showLogin, setShowLogin] = useState(true)
+  const [showPostLoginRoleSelection, setShowPostLoginRoleSelection] = useState(false)
 
   // Dynamically define onboarding steps based on role
   const steps = useMemo(() => {
@@ -73,6 +90,12 @@ const Home = () => {
 
   // Handle next step / registration
   const goNext = async () => {
+    // Validation: If on role picker step (step 0), ensure role is selected
+    if (currentStep === 0 && !user?.user_type) {
+      setError('Please select your role to continue.');
+      return;
+    }
+
     const isFinalStep = currentStep === steps.length - 1
 
     if (!isFinalStep) {
@@ -84,17 +107,25 @@ const Home = () => {
     setError(null)
 
     try {
+      // Validation: Ensure user has selected a valid role before registration
+      if (!user?.user_type) {
+        setError('Please select your role before continuing.');
+        setCurrentStep(0); // Go back to role picker
+        return;
+      }
+
+      // Validation: Ensure role is one of the valid types
+      if (![userTypes.TALENT, userTypes.INDEPENDENT_RECRUITER, userTypes.ORGANISATION].includes(user.user_type)) {
+        setError('Invalid role selected. Please try again.');
+        setCurrentStep(0);
+        return;
+      }
+
       const registerData: RegisterDto = {
         primaryEmail: user.email,
         password: user.password || '',
         fullName: user.full_name,
         location: user.country,
-        role:
-          user.user_type === userTypes.TALENT
-            ? 'talent'
-            : user.user_type === userTypes.INDEPENDENT_RECRUITER
-            ? 'recruiter'
-            : 'org_admin',
         accountType:
           user.user_type === userTypes.TALENT
             ? 'talent'
@@ -110,6 +141,14 @@ const Home = () => {
         if (user.organisation_name) registerData.recruiterOrganizationName = user.organisation_name;
       }
 
+      // Add talent-specific CV fields
+      if (user.user_type === userTypes.TALENT) {
+        if (user.cv_source) registerData.cv_source = user.cv_source;
+        if (user.linkedin_connected !== undefined) registerData.linkedin_connected = user.linkedin_connected;
+        if (user.cv_file) registerData.cv_file = user.cv_file;
+        if (user.linked_emails) registerData.linked_emails = user.linked_emails;
+      }
+
       if (user.user_type === userTypes.ORGANISATION) {
         if (user.organization_name) registerData.organizationName = user.organization_name;
         if (user.organization_domain) registerData.organizationDomain = user.organization_domain;
@@ -122,7 +161,7 @@ const Home = () => {
 
       // Basic client-side guardrails for org admin payload completeness
       if (
-        registerData.role === 'org_admin' &&
+        user.user_type === userTypes.ORGANISATION &&
         (!registerData.organizationName || !registerData.organizationDomain)
       ) {
         setError('Please provide your organization name and official email domain.');
@@ -139,11 +178,8 @@ const Home = () => {
       const { token } = await authService.register(registerData)
 
       // Note: authService.register already updates the store with token and user data
-      // Just ensure token is set and redirect immediately
+      // The useEffect will detect the token and handle redirect
       localStorage.setItem('hasEverRegistered', 'true')
-
-      // Redirect to dashboard
-      router.push('/dashboard')
     } catch (err: unknown) {
       console.error('Registration error:', err)
       const message = (err as { message?: string })?.message || 'Registration failed. Please try again.'
@@ -153,12 +189,39 @@ const Home = () => {
     }
   }
 
+  const handlePostLoginRoleSelected = async (role: 'talent' | 'recruiter' | 'org_admin') => {
+    console.log('[app/page] Post-login role selected:', role);
+    
+    try {
+      // Switch to the selected role
+      await authService.switchRole({ role });
+      
+      // Update the store with the selected role
+      const user_type = role === 'recruiter' ? userTypes.INDEPENDENT_RECRUITER : 
+                       role === 'talent' ? userTypes.TALENT : userTypes.ORGANISATION;
+      
+      useCreateUserStore.getState().updateUser({
+        active_role: role,
+        user_type
+      });
+      
+      // Redirect to appropriate dashboard
+      const dashboardRoute = role === 'talent' ? '/dashboard/ai-card' : '/dashboard';
+      router.replace(dashboardRoute);
+    } catch (error) {
+      console.error('Failed to switch role:', error);
+      setError('Failed to switch role. Please try again.');
+      setShowPostLoginRoleSelection(false);
+      hasRedirected.current = false; // Allow retry
+    }
+  }
+
   const goBack = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1)
   }
 
-  // Render login first
-  if (showLogin) {
+  // Render post-login role selection
+  if (showPostLoginRoleSelection) {
     return (
       <MaxWidthContainer large>
         <div className="flex items-center py-6">
@@ -166,20 +229,7 @@ const Home = () => {
         </div>
 
         <div className="min-h-[400px] flex items-center justify-center">
-          <LoginPage
-            onLoginSuccess={() => router.push('/dashboard')}
-            onShowRegister={() => setShowLogin(false)}
-          />
-        </div>
-
-        <div className="text-center mt-8">
-          <span className="text-gray-600">New here? </span>
-          <button
-            onClick={() => setShowLogin(false)}
-            className="text-brand-primary font-medium hover:underline"
-          >
-            Create an account
-          </button>
+          <PostLoginRoleSelection onRoleSelected={handlePostLoginRoleSelected} />
         </div>
       </MaxWidthContainer>
     )
@@ -214,7 +264,7 @@ const Home = () => {
         </div>
       )}
 
-      <div className="min-h-[400px] flex items-center justify-center">
+      <div className="min-h-[400px] flex mb-10 items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -230,11 +280,11 @@ const Home = () => {
       </div>
 
       {steps[currentStep] && !hideParentButtons && (
-        <div className="flex justify-between mt-10 mb-6">
+        <div className="flex justify-between">
           <button
             onClick={goBack}
-            disabled={currentStep === 0}
-            className="px-6 py-3 rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+            disabled={currentStep === 0 || isSubmitting}
+            className="px-6 py-3 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
             Back
           </button>
@@ -242,8 +292,9 @@ const Home = () => {
           <button
             onClick={goNext}
             disabled={isSubmitting}
-            className="px-6 py-3 rounded-lg bg-brand-primary text-white disabled:opacity-40 hover:bg-brand-primary/90 transition-colors"
+            className="px-6 py-3 rounded-lg bg-brand-primary text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-brand-primary/90 transition-colors flex items-center gap-2 justify-center"
           >
+            {isSubmitting && <Spinner className="text-white" />}
             {isSubmitting ? 'Creating account...' : isFinalStep ? 'Finish' : 'Next'}
           </button>
         </div>

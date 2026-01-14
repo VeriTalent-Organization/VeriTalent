@@ -28,8 +28,7 @@ export interface RegisterDto {
   password: string;
   fullName: string;
   location: string;
-  role: 'talent' | 'recruiter' | 'org_admin';
-  accountType: 'talent' | 'recruiter' | 'organization';
+  accountType: string;
   organizationName?: string;
   organizationDomain?: string;
   organizationLinkedinPage?: string;
@@ -40,8 +39,10 @@ export interface RegisterDto {
   professionalDesignation?: string;
   professionalStatus?: string;
   recruiterOrganizationName?: string;
-  // Proposed: extra onboarding info (not sent until backend supports it)
-  onboarding?: TalentOnboardingExtras;
+  linked_emails?: string[];
+  cv_source?: CvSource;
+  linkedin_connected?: boolean;
+  cv_file?: File;
 }
 
 export interface LoginDto {
@@ -56,17 +57,52 @@ export interface SwitchRoleDto {
 export const authService = {
   // Register a new user
   register: async (data: RegisterDto) => {
-    // Only send fields currently supported by backend register endpoint
-    const { onboarding: _onboarding, ...registerPayload } = data; // eslint-disable-line @typescript-eslint/no-unused-vars
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+
+    // Add basic fields
+    formData.append('primaryEmail', data.primaryEmail);
+    formData.append('password', data.password);
+    formData.append('fullName', data.fullName);
+    formData.append('location', data.location);
+    formData.append('accountType', data.accountType);
+
+    // Add optional fields
+    if (data.organizationName) formData.append('organizationName', data.organizationName);
+    if (data.organizationDomain) formData.append('organizationDomain', data.organizationDomain);
+    if (data.organizationLinkedinPage) formData.append('organizationLinkedinPage', data.organizationLinkedinPage);
+    if (data.organisationSize) formData.append('organisationSize', data.organisationSize);
+    if (data.organisationRcNumber) formData.append('organisationRcNumber', data.organisationRcNumber);
+    if (data.organisationIndustry) formData.append('organisationIndustry', data.organisationIndustry);
+    if (data.organisationLocation) formData.append('organisationLocation', data.organisationLocation);
+    if (data.professionalDesignation) formData.append('professionalDesignation', data.professionalDesignation);
+    if (data.professionalStatus) formData.append('professionalStatus', data.professionalStatus);
+    if (data.recruiterOrganizationName) formData.append('recruiterOrganizationName', data.recruiterOrganizationName);
+
+    // Add CV-related fields
+    if (data.cv_source) formData.append('cv_source', data.cv_source);
+    if (data.linkedin_connected !== undefined) formData.append('linkedin_connected', data.linkedin_connected.toString());
+    if (data.cv_file) formData.append('cv_file', data.cv_file);
+
+    // Add linked_emails as JSON array
+    if (data.linked_emails && data.linked_emails.length > 0) {
+      formData.append('linked_emails', JSON.stringify(data.linked_emails));
+    }
 
     if (process.env.NODE_ENV !== 'production') {
-      const dbg = { ...registerPayload } as Record<string, unknown>;
-      delete (dbg as { password?: string }).password;
-      console.log('[authService.register] POST /auth/register payload →', dbg);
+      console.log('[authService.register] POST /auth/register FormData fields →', 
+        Array.from(formData.entries()).map(([key, value]) => 
+          key === 'cv_file' ? [key, (value as File).name] : [key, value]
+        )
+      );
     }
 
     try {
-      const response = await apiClient.post('/auth/register', registerPayload);
+      const response = await apiClient.post('/auth/register', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       // ✅ Handle different possible response structures from backend
       const responseData = response.data.data || response.data;
@@ -78,25 +114,42 @@ export const authService = {
       }
 
       // Map backend activeRole → our userTypes enum
-      const activeRole = backendUser.activeRole || backendUser.role || data.role;
+      const activeRole = backendUser.activeRole || backendUser.role;
       let user_type;
-      switch (activeRole) {
-        case 'recruiter':
-          user_type = userTypes.INDEPENDENT_RECRUITER;
-          break;
-        case 'talent':
-          user_type = userTypes.TALENT;
-          break;
-        case 'org_admin':
-        default:
-          user_type = userTypes.ORGANISATION;
-          break;
+      if (activeRole) {
+        switch (activeRole) {
+          case 'recruiter':
+            user_type = userTypes.INDEPENDENT_RECRUITER;
+            break;
+          case 'talent':
+            user_type = userTypes.TALENT;
+            break;
+          case 'org_admin':
+          default:
+            user_type = userTypes.ORGANISATION;
+            break;
+        }
+      } else {
+        // Fallback to accountType mapping
+        switch (data.accountType) {
+          case 'recruiter':
+            user_type = userTypes.INDEPENDENT_RECRUITER;
+            break;
+          case 'talent':
+            user_type = userTypes.TALENT;
+            break;
+          case 'organization':
+          default:
+            user_type = userTypes.ORGANISATION;
+            break;
+        }
       }
 
       // Fully hydrate Zustand store
       useCreateUserStore.getState().updateUser({
         token,
         user_type,
+        active_role: activeRole as 'talent' | 'recruiter' | 'org_admin',
         available_roles: backendUser.roles || [activeRole] as ('talent' | 'recruiter' | 'org_admin')[],
         full_name: data.fullName,
         email: data.primaryEmail,
@@ -139,13 +192,20 @@ export const authService = {
     const loginRes = await apiClient.post('/auth/login', data);
     console.log('Full login response:', JSON.stringify(loginRes.data, null, 2));
     
-    const token = loginRes?.data?.data?.access_token;
-    const loginUserData = loginRes?.data?.data?.user;
+    // Try multiple possible locations for the token
+    const token = loginRes?.data?.data?.access_token || 
+                  loginRes?.data?.access_token || 
+                  loginRes?.data?.token ||
+                  loginRes?.data?.data?.token;
+    const loginUserData = loginRes?.data?.data?.user || 
+                          loginRes?.data?.user || 
+                          loginRes?.data?.data;
 
     console.log('Extracted token:', token);
     console.log('Extracted loginUserData:', loginUserData);
 
     if (!token) {
+      console.error('Token extraction failed. Response structure:', loginRes.data);
       throw new Error('No access token returned from login');
     }
 
@@ -212,9 +272,12 @@ export const authService = {
      */
     useCreateUserStore.getState().updateUser({
       user_type,
+      active_role: activeRole as 'talent' | 'recruiter' | 'org_admin',
       available_roles: availableRoles as ('talent' | 'recruiter' | 'org_admin')[],
       full_name: me?.fullName || me?.full_name,
       email: me?.primaryEmail || me?.email,
+      veritalent_id: me?.veritalentId || me?.veritalent_id,
+      location: me?.location,
     });
 
     /**

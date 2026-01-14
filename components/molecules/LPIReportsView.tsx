@@ -144,7 +144,7 @@ export default function LPIReportsView({ onNavigate }: LPIReportsViewProps) {
         )}
       </div>
       {selectedReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/40 px-4">
           <div className="bg-white w-full max-w-lg rounded-lg shadow-lg">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
               <div>

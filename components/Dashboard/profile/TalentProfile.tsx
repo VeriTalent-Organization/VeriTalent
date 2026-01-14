@@ -5,6 +5,9 @@ import { useCreateUserStore } from "@/lib/stores/form_submission_store";
 import { Mail, Briefcase, Award, Share2, Download, Link as LinkIcon, Trash2, Plus } from "lucide-react";
 import { ProfileHeader } from './profileHeader';
 import { TabNavigation } from './tabNavigation';
+import { EmailVerificationModal } from './EmailVerificationModal';
+import CertificateVerificationModal from './CertificateVerificationModal';
+import { usersService } from '@/lib/services/usersService';
 
 export default function TalentProfile() {
   const { user } = useCreateUserStore();
@@ -30,6 +33,10 @@ export default function TalentProfile() {
   const [careerHistory, setCareerHistory] = useState(initialCareerHistory);
   const [newEmail, setNewEmail] = useState('');
   const [additionalEmails, setAdditionalEmails] = useState<Array<{ email: string; primary: boolean; verified: boolean }>>([]);
+  const [verificationModal, setVerificationModal] = useState<{ isOpen: boolean; email: string }>({ isOpen: false, email: '' });
+  const [certificateModal, setCertificateModal] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
 
   // Compute linked emails from store data
   const linkedEmailsFromStore = useMemo(() => {
@@ -53,31 +60,64 @@ export default function TalentProfile() {
     { id: 'personal', label: 'Personal Info' },
     { id: 'career', label: 'Career History' },
     { id: 'emails', label: 'Linked Emails' },
+    { id: 'certificates', label: 'Certificates' },
     { id: 'card', label: 'VeriTalent AI Card' },
     { id: 'account', label: 'Account Settings' },
   ];
 
-  const handleAddEmail = () => {
-    if (newEmail && !localLinkedEmails.find(e => e.email === newEmail)) {
-      setAdditionalEmails([...additionalEmails, { email: newEmail, primary: false, verified: false }]);
-      setNewEmail('');
+  const handleAddEmail = async () => {
+    if (!newEmail || !localLinkedEmails.find(e => e.email === newEmail)) {
+      setEmailLoading(true);
+      setEmailError('');
+      try {
+        // Add email via backend
+        await usersService.addEmail({ email: newEmail });
+
+        // Add to local state as unverified
+        setAdditionalEmails([...additionalEmails, { email: newEmail, primary: false, verified: false }]);
+
+        // Open verification modal
+        setVerificationModal({ isOpen: true, email: newEmail });
+        setNewEmail('');
+      } catch (error: any) {
+        setEmailError(error.response?.data?.message || 'Failed to add email');
+      } finally {
+        setEmailLoading(false);
+      }
     }
   };
 
-  const handleRemoveEmail = (email: string) => {
-    // Only allow removing additional emails, not store emails
-    setAdditionalEmails(additionalEmails.filter(e => e.email !== email));
+  const handleRemoveEmail = async (email: string) => {
+    setEmailLoading(true);
+    setEmailError('');
+    try {
+      await usersService.removeEmail(email);
+      // Remove from local state
+      setAdditionalEmails(additionalEmails.filter(e => e.email !== email));
+    } catch (error: any) {
+      setEmailError(error.response?.data?.message || 'Failed to remove email');
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
-  const handleSetPrimaryEmail = (email: string) => {
-    // This would need backend integration to actually change the primary email
-    // For now, just update local state
-    setAdditionalEmails(
-      additionalEmails.map(e => ({
-        ...e,
-        primary: e.email === email,
-      }))
-    );
+  const handleSetPrimaryEmail = async (email: string) => {
+    setEmailLoading(true);
+    setEmailError('');
+    try {
+      await usersService.setPrimaryEmail({ email });
+      // Update local state
+      setAdditionalEmails(
+        additionalEmails.map(e => ({
+          ...e,
+          primary: e.email === email,
+        }))
+      );
+    } catch (error: any) {
+      setEmailError(error.response?.data?.message || 'Failed to set primary email');
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
   const handleAddCareer = () => {
@@ -89,6 +129,46 @@ export default function TalentProfile() {
       endDate: 'Present',
     };
     setCareerHistory([...careerHistory, newCareer]);
+  };
+
+  const handleVerifyEmail = async (code: string) => {
+    setEmailLoading(true);
+    setEmailError('');
+    try {
+      await usersService.verifyEmail({ email: verificationModal.email, code });
+
+      // Update local state to mark as verified
+      setAdditionalEmails(
+        additionalEmails.map(e =>
+          e.email === verificationModal.email ? { ...e, verified: true } : e
+        )
+      );
+
+      setVerificationModal({ isOpen: false, email: '' });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Verification failed');
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleCertificateVerification = async (certificateData: any) => {
+    // TODO: Implement certificate verification API call
+    console.log('Certificate verification request:', certificateData);
+    // For now, just show success message
+    alert('Certificate verification request submitted successfully! You will be notified once verification is complete.');
+  };
+
+  const handleResendVerificationCode = async () => {
+    setEmailLoading(true);
+    setEmailError('');
+    try {
+      await usersService.resendVerificationCode(verificationModal.email);
+    } catch (error: any) {
+      setEmailError(error.response?.data?.message || 'Failed to resend code');
+    } finally {
+      setEmailLoading(false);
+    }
   };
 
   const handleDeleteCareer = (id: number) => {
@@ -330,10 +410,19 @@ export default function TalentProfile() {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        {!emailData.verified && (
+                          <button
+                            onClick={() => setVerificationModal({ isOpen: true, email: emailData.email })}
+                            className="text-sm text-blue-600 hover:bg-blue-50 px-3 py-1 rounded"
+                          >
+                            Verify
+                          </button>
+                        )}
                         {!emailData.primary && (
                           <button
                             onClick={() => handleSetPrimaryEmail(emailData.email)}
-                            className="text-sm text-brand-primary hover:bg-brand-primary/5 px-3 py-1 rounded"
+                            disabled={emailLoading}
+                            className="text-sm text-brand-primary hover:bg-brand-primary/5 px-3 py-1 rounded disabled:opacity-50"
                           >
                             Set Primary
                           </button>
@@ -341,7 +430,8 @@ export default function TalentProfile() {
                         {!emailData.primary && (
                           <button
                             onClick={() => handleRemoveEmail(emailData.email)}
-                            className="text-sm text-red-600 hover:bg-red-50 px-3 py-1 rounded"
+                            disabled={emailLoading}
+                            className="text-sm text-red-600 hover:bg-red-50 px-3 py-1 rounded disabled:opacity-50"
                           >
                             Remove
                           </button>
@@ -354,19 +444,26 @@ export default function TalentProfile() {
                 {/* Add New Email */}
                 <div className="border-t pt-6">
                   <h3 className="font-semibold text-gray-900 mb-4">Add New Email</h3>
+                  {emailError && (
+                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-700">{emailError}</p>
+                    </div>
+                  )}
                   <div className="flex gap-2 flex-col sm:flex-row">
                     <input
                       type="email"
                       value={newEmail}
                       onChange={(e) => setNewEmail(e.target.value)}
                       placeholder="Enter email address"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                      disabled={emailLoading}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary disabled:bg-gray-50"
                     />
                     <button
                       onClick={handleAddEmail}
-                      className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 font-medium"
+                      disabled={!newEmail.trim() || emailLoading}
+                      className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 font-medium disabled:opacity-50"
                     >
-                      Add Email
+                      {emailLoading ? 'Adding...' : 'Add Email'}
                     </button>
                   </div>
                 </div>
@@ -450,6 +547,50 @@ export default function TalentProfile() {
               </div>
             )}
 
+            {/* Certificates Tab */}
+            {activeTab === 'certificates' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Certificates</h2>
+                  <button
+                    onClick={() => setCertificateModal(true)}
+                    className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 font-medium flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Request Verification
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Pending Verifications */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-yellow-800 mb-2">Pending Verifications</h3>
+                    <p className="text-sm text-yellow-700">No pending certificate verifications.</p>
+                  </div>
+
+                  {/* Verified Certificates */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-green-800 mb-2">Verified Certificates</h3>
+                    <p className="text-sm text-green-700">No verified certificates yet.</p>
+                  </div>
+
+                  {/* Info Box */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-800 mb-2">Certificate Verification</h3>
+                    <p className="text-sm text-blue-700">
+                      Upload your certificates for verification by our team. Verified certificates add credibility to your profile and help employers trust your qualifications.
+                    </p>
+                    <ul className="text-sm text-blue-700 mt-2 list-disc list-inside space-y-1">
+                      <li>Supported formats: PDF, JPG, PNG</li>
+                      <li>Maximum file size: 5MB</li>
+                      <li>Verification typically takes 2-3 business days</li>
+                      <li>You'll receive a notification once verification is complete</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Account Settings Tab */}
             {activeTab === 'account' && (
               <div>
@@ -479,6 +620,24 @@ export default function TalentProfile() {
           </div>
         </div>
       </div>
+
+      {/* Email Verification Modal */}
+      <EmailVerificationModal
+        isOpen={verificationModal.isOpen}
+        onClose={() => setVerificationModal({ isOpen: false, email: '' })}
+        email={verificationModal.email}
+        onVerify={handleVerifyEmail}
+        onResendCode={handleResendVerificationCode}
+        isLoading={emailLoading}
+        error={emailError}
+      />
+
+      {/* Certificate Verification Modal */}
+      <CertificateVerificationModal
+        isOpen={certificateModal}
+        onClose={() => setCertificateModal(false)}
+        onSubmit={handleCertificateVerification}
+      />
     </div>
   );
 }

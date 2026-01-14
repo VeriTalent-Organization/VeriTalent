@@ -15,6 +15,7 @@ import {
   Plus,
   ChevronDown,
   RefreshCw,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -130,6 +131,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       case userTypes.ORGANISATION:
         return [
           { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
+          { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+          { icon: FileText, label: "TAPI", href: "/dashboard/tapi" },
           { icon: Briefcase, label: "My Posted Jobs", href: "/dashboard/jobs" },
           { icon: FileText, label: "Post Job / Uploads", href: "/dashboard/postAJob" },
           { icon: ClipboardList, label: "Screened Results & Shortlisting", href: "/dashboard/screening" },
@@ -156,66 +159,70 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const handleRoleSwitch = async (newRole: 'talent' | 'recruiter' | 'org_admin') => {
     if (isSwitching) return;
 
-    // Check if user already has this role in their roles array
-    const alreadyHasRole = user?.roles?.includes(newRole) || false;
-
-    console.log('[Sidebar] handleRoleSwitch called:', {
-      newRole,
-      currentRoles: user?.roles,
-      alreadyHasRole
-    });
-
-    if (alreadyHasRole) {
-      // Condition 1: User already has this role - switch directly without any form
-      setIsSwitching(true);
-      try {
-        console.log('[Sidebar] Switching to role:', newRole);
-        const switchResponse = await authService.switchRole({ role: newRole });
-        console.log('[Sidebar] Switch response:', switchResponse);
-
-        // Extract new token from response
-        const newToken = switchResponse?.token || switchResponse?.access_token;
-        
-        console.log('[Sidebar] Has token in response:', !!newToken);
-
-        // Update both active_role and user_type in store
-        const user_type = mapRoleToUserType(newRole);
-        
-        console.log('[Sidebar] Updating store with:', {
-          active_role: newRole,
-          user_type,
-          hasNewToken: !!newToken
-        });
-        
-        updateUser({ 
-          active_role: newRole,
-          user_type,
-          token: newToken || user?.token || '' // Use new token if available
-        });
-        
-        console.log('[Sidebar] Store updated, closing role switcher');
+    setIsSwitching(true);
+    try {
+      console.log('[Sidebar] Attempting to switch to role:', newRole);
+      
+      // Check if user already has this role
+      const userRoles = user?.roles || [];
+      const hasRole = userRoles.includes(newRole);
+      
+      console.log('[Sidebar] User roles:', userRoles, 'Has role:', hasRole);
+      
+      if (!hasRole) {
+        // User doesn't have this role, show onboarding modal to add it
+        console.log('[Sidebar] User does not have role, showing onboarding modal');
+        setTargetRole(newRole);
+        setShowOnboardingModal(true);
         setShowRoleSwitcher(false);
-        
-        // Redirect to appropriate landing page for the new role
-        if (newRole === 'talent') {
-          router.push('/dashboard/ai-card');
-        } else {
-          router.push('/dashboard');
-        }
-        
-        console.log('[Sidebar] Role switch complete, redirecting to appropriate page');
-      } catch (error) {
-        console.error('Role switch failed:', error);
-        alert('Failed to switch role. Please try again.');
-      } finally {
-        setIsSwitching(false);
+        return;
       }
-    } else {
-      // Condition 2: User doesn't have this role - show onboarding modal
-      // Required info needs to be filled before switching
+
+      // User has the role, proceed with direct switch
+      console.log('[Sidebar] User has role, proceeding with direct switch');
+      const switchResponse = await authService.switchRole({ role: newRole });
+      console.log('[Sidebar] Switch response:', switchResponse);
+
+      // Extract new token from response
+      const newToken = switchResponse?.token || switchResponse?.access_token;
+      
+      console.log('[Sidebar] Has token in response:', !!newToken);
+
+      // Update both active_role and user_type in store
+      const user_type = mapRoleToUserType(newRole);
+      
+      console.log('[Sidebar] Updating store with:', {
+        active_role: newRole,
+        user_type,
+        hasNewToken: !!newToken
+      });
+      
+      updateUser({ 
+        active_role: newRole,
+        user_type,
+        token: newToken || user?.token || '' // Use new token if available
+      });
+      
+      console.log('[Sidebar] Store updated, closing role switcher');
+      setShowRoleSwitcher(false);
+      
+      // Redirect to appropriate landing page for the new role
+      if (newRole === 'talent') {
+        router.push('/dashboard/ai-card');
+      } else {
+        router.push('/dashboard');
+      }
+      
+      console.log('[Sidebar] Role switch complete, redirecting to appropriate page');
+    } catch (error) {
+      console.error('Role switch failed:', error);
+      // If switch failed, show onboarding modal to add the role
+      console.log('[Sidebar] Switch failed, showing onboarding modal as fallback');
       setTargetRole(newRole);
       setShowOnboardingModal(true);
       setShowRoleSwitcher(false);
+    } finally {
+      setIsSwitching(false);
     }
   };
 
@@ -246,7 +253,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       />
 
       <div
-        className={`fixed lg:static z-9999 bg-white border-r w-64 h-screen flex flex-col overflow-y-auto transform transition-transform duration-300
+        className={`fixed lg:static max-h-dvh z-9999 bg-white border-r w-64 h-screen flex flex-col overflow-y-auto transform transition-transform duration-300
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
       >
@@ -265,7 +272,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* User Info */}
-        <div className="px-6 pb-6 border-b border-gray-200">
+        <div className="px-6 pb-2 md:pb-6 border-b border-gray-200">
           <button
             onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
             className="w-full text-left group"
@@ -303,7 +310,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Menu */}
-        <nav className="flex-1 px-4 py-6 space-y-1">
+        <nav className="flex-1 px-4 py-2 md:py-6 -space-y-1">
           {menuItems.map((item) => {
             const active = isActive(item.href);
 

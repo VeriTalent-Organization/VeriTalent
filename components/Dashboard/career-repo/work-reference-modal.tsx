@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { X } from "lucide-react";
 import { Request, IssuedRecord } from "@/types/dashboard";
+import { Spinner } from "@/components/ui/spinner";
+import Modal from "@/components/ui/modal";
 
 interface WorkReferenceModalProps {
   onClose: () => void;
@@ -18,69 +19,110 @@ const WorkReferenceModal = ({
   recordData
 }: WorkReferenceModalProps) => {
   const [declineReason, setDeclineReason] = useState("");
+  const [isApproving, setIsApproving] = useState(false);
+  const [isDeclining, setIsDeclining] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isRequestingUpdate, setIsRequestingUpdate] = useState(false);
 
   // Use whichever data is provided
   const data = requestData || recordData;
 
-  const handleApprove = () => {
-    console.log("Approved", data);
-    onClose();
+  const handleApprove = async () => {
+    setIsApproving(true);
+    try {
+      // TODO: Replace with actual API call
+      // await referencesService.approve(data?.id);
+      console.log("Approved", data);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      onClose();
+    } catch (error) {
+      console.error("Failed to approve:", error);
+      // TODO: Show error message to user
+    } finally {
+      setIsApproving(false);
+    }
   };
 
-  const handleDecline = () => {
-    console.log("Declined with reason:", declineReason, data);
-    onClose();
+  const handleDecline = async () => {
+    if (!declineReason.trim()) {
+      // TODO: Show validation error
+      return;
+    }
+    setIsDeclining(true);
+    try {
+      // TODO: Replace with actual API call
+      // await referencesService.decline(data?.id, declineReason);
+      console.log("Declined with reason:", declineReason, data);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      onClose();
+    } catch (error) {
+      console.error("Failed to decline:", error);
+      // TODO: Show error message to user
+    } finally {
+      setIsDeclining(false);
+    }
   };
 
-  const handleShare = () => {
-    console.log("Share reference", data);
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      // TODO: Replace with actual API call
+      // await referencesService.share(data?.id);
+      console.log("Share reference", data);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    } catch (error) {
+      console.error("Failed to share:", error);
+    } finally {
+      setIsSharing(false);
+    }
   };
 
-  const handleDownload = () => {
-    console.log("Download reference", data);
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      // TODO: Replace with actual API call
+      // await referencesService.download(data?.id);
+      console.log("Download reference", data);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    } catch (error) {
+      console.error("Failed to download:", error);
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
-  const handleRequestUpdate = () => {
-    console.log("Request update", data);
+  const handleRequestUpdate = async () => {
+    setIsRequestingUpdate(true);
+    try {
+      // TODO: Replace with actual API call
+      // await referencesService.requestUpdate(data?.id);
+      console.log("Request update", data);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    } catch (error) {
+      console.error("Failed to request update:", error);
+    } finally {
+      setIsRequestingUpdate(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end p-4 justify-center">
-      {/* Backdrop click closes modal */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Modal Container */}
-      <div
-        className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[87vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b sticky top-0 bg-white z-10">
-          <div>
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-              {data?.credentialType || "Work Reference"}
-            </h2>
-            <span className="text-xs sm:text-sm text-gray-500">Historical</span>
-          </div>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
-            aria-label="Close modal"
-          >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={data?.credentialType || "Work Reference"}
+      size="lg"
+      position="bottom"
+      showCloseButton={true}
+    >
+      {/* Modal Body */}
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        {/* Status Badge */}
+        <div className="flex justify-end">
+          <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs sm:text-sm rounded-full font-medium">
+            {data?.status || "Pending"}
+          </span>
         </div>
-
-        {/* Modal Body */}
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Status Badge */}
-          <div className="flex justify-end">
-            <span className="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs sm:text-sm rounded-full font-medium">
-              {data?.status || "Pending"}
-            </span>
-          </div>
 
           {/* Issuer and Talent Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,20 +287,26 @@ const WorkReferenceModal = ({
             <>
               <button 
                 onClick={handleShare}
-                className="flex-1 px-3 sm:px-6 py-2.5 text-xs sm:text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium"
+                disabled={isSharing}
+                className="flex-1 px-3 sm:px-6 py-2.5 text-xs sm:text-sm bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isSharing && <Spinner className="text-white" />}
                 Share
               </button>
               <button 
                 onClick={handleDownload}
-                className="flex-1 px-3 sm:px-6 text-xs sm:text-sm py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium"
+                disabled={isDownloading}
+                className="flex-1 px-3 sm:px-6 text-xs sm:text-sm py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isDownloading && <Spinner className="text-white" />}
                 Download
               </button>
               <button 
                 onClick={handleRequestUpdate}
-                className="flex-1 px-3 text-xs sm:text-sm sm:px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium"
+                disabled={isRequestingUpdate}
+                className="flex-1 px-3 text-xs sm:text-sm sm:px-6 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isRequestingUpdate && <Spinner className="text-white" />}
                 Request Update
               </button>
             </>
@@ -266,21 +314,24 @@ const WorkReferenceModal = ({
             <>
               <button 
                 onClick={handleApprove}
-                className="flex-1 px-4 sm:px-6 py-2.5 text-xs sm:text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium"
+                disabled={isApproving || isDeclining}
+                className="flex-1 px-4 sm:px-6 py-2.5 text-xs sm:text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isApproving && <Spinner className="text-white" />}
                 Approve
               </button>
               <button 
                 onClick={handleDecline}
-                className="flex-1 px-4 sm:px-6 py-2.5 text-xs sm:text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
+                disabled={isApproving || isDeclining}
+                className="flex-1 px-4 sm:px-6 py-2.5 text-xs sm:text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {isDeclining && <Spinner className="text-white" />}
                 Decline
               </button>
             </>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

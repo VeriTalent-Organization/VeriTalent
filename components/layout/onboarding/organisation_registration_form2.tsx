@@ -8,11 +8,12 @@ interface OrganizationDetailsFormStepProps {
   onNext: () => void;
   onBack?: () => void;
   isFinalStep?: boolean;
+  inModal?: boolean;  // True when displayed in RoleSwitchOnboardingModal
 }
 
 const OrganizationDetailsFormStep: React.FC<OrganizationDetailsFormStepProps> & {
   hideParentButtons: boolean;
-} = ({ onNext, onBack }) => {
+} = ({ onNext, onBack, inModal = false }) => {
   const { user, updateUser } = useCreateUserStore();
 
   // Safety guard — should never be null here, but prevents crashes
@@ -93,19 +94,21 @@ const OrganizationDetailsFormStep: React.FC<OrganizationDetailsFormStepProps> & 
 
   return (
     <div className="flex items-center justify-center flex-col gap-6 sm:gap-8 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="text-center">
-        <Text variant="Heading" as="h1" className="mb-2 text-2xl sm:text-3xl lg:text-4xl">
-          Join <span className="text-brand-primary">VeriTalent</span>
-        </Text>
+      {!inModal && (
+        <div className="text-center">
+          <Text variant="SubHeadings" as="h1" className="mb-2 text-2xl sm:text-3xl lg:text-4xl">
+            Join <span className="text-brand-primary">VeriTalent</span>
+          </Text>
 
-        <Text
-          variant="SubText"
-          className="mt-2 max-w-2xl mx-auto leading-6 text-sm sm:text-base px-4"
-          color="rgba(0,0,0,0.6)"
-        >
-          Register your organisation to manage internal talents / to screen and hire the best-fit talents.
-        </Text>
-      </div>
+          <Text
+            variant="SubText"
+            className="mt-2 max-w-2xl mx-auto leading-6 text-sm sm:text-base px-4"
+            color="rgba(0,0,0,0.6)"
+          >
+            Register your organisation to manage internal talents / to screen and hire the best-fit talents.
+          </Text>
+        </div>
+      )}
 
       <div className="w-full max-w-md">
         <FormComponent

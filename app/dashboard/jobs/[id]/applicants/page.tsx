@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, User, MapPin, Clock, Calendar, Briefcase, Eye, FileText, CheckSquare } from 'lucide-react';
 import { jobsService } from '@/lib/services/jobsService';
+import { formatDate } from '@/lib/utils';
 
 interface Applicant {
   _id: string;
@@ -66,15 +67,6 @@ export default function JobApplicantsPage() {
       fetchJobDetails();
     }
   }, [jobId, fetchJobDetails]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
 
   const filteredApplicants = job?.applicants || [];
 

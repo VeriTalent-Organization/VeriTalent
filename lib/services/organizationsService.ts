@@ -39,6 +39,24 @@ export interface AddTeamMemberDto {
   role: 'talent' | 'recruiter' | 'org_admin';
 }
 
+export interface VerificationStatusDto {
+  domain: {
+    status: 'verified' | 'pending' | 'failed' | 'not_started';
+    verifiedAt?: string;
+    domain?: string;
+  };
+  linkedin: {
+    status: 'verified' | 'pending' | 'failed' | 'not_started';
+    verifiedAt?: string;
+    linkedinPage?: string;
+  };
+  documents: {
+    status: 'verified' | 'pending' | 'failed' | 'not_started';
+    verifiedAt?: string;
+    documentType?: string;
+  };
+}
+
 // Organizations service functions
 export const organizationsService = {
   // Create a new organization
@@ -74,6 +92,55 @@ export const organizationsService = {
   // Verify organization
   verify: async (id: string) => {
     const response = await apiClient.patch(`/organizations/${id}/verify`);
+    return response.data;
+  },
+
+  // Get verification status
+  getVerificationStatus: async () => {
+    console.log('[organizationsService] Calling GET /organizations/verify/status');
+    const response = await apiClient.get('/organizations/verify/status');
+    console.log('[organizationsService] GET /organizations/verify/status response:', response.data);
+    return response.data;
+  },
+
+  // Domain verification
+  initiateDomainVerification: async (domain: string) => {
+    console.log('[organizationsService] Calling POST /organizations/verify/domain with domain:', domain);
+    const response = await apiClient.post('/organizations/verify/domain', { domain });
+    console.log('[organizationsService] POST /organizations/verify/domain response:', response.data);
+    return response.data;
+  },
+
+  checkDomainVerification: async () => {
+    console.log('[organizationsService] Calling GET /organizations/verify/domain/check');
+    const response = await apiClient.get('/organizations/verify/domain/check');
+    console.log('[organizationsService] GET /organizations/verify/domain/check response:', response.data);
+    return response.data;
+  },
+
+  // LinkedIn verification
+  initiateLinkedInVerification: async () => {
+    console.log('[organizationsService] Calling POST /organizations/verify/linkedin');
+    const response = await apiClient.post('/organizations/verify/linkedin');
+    console.log('[organizationsService] POST /organizations/verify/linkedin response:', response.data);
+    return response.data;
+  },
+
+  // Document verification
+  uploadVerificationDocuments: async (files: File[], documentType: string) => {
+    console.log('[organizationsService] Uploading verification documents:', { count: files.length, type: documentType });
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append(`documents`, file);
+    });
+    formData.append('documentType', documentType);
+
+    const response = await apiClient.post('/organizations/verify/documents', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    console.log('[organizationsService] POST /organizations/verify/documents response:', response.data);
     return response.data;
   },
 };

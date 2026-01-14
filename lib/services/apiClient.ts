@@ -43,14 +43,31 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('[apiClient] Request failed:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      errorData: error.response?.data,
-      message: error.message
-    });
+    // Improved error logging: print raw error plus a safe, serializable summary.
+    try {
+      console.error('[apiClient] Raw error:', error);
+    } catch (e) {
+      console.error('[apiClient] Raw error (failed to print):', String(error));
+    }
+
+    const safeSummary: Record<string, unknown> = {
+      url: error?.config?.url ?? null,
+      method: error?.config?.method ?? null,
+      status: error?.response?.status ?? null,
+      statusText: error?.response?.statusText ?? null,
+      // Axios may include non-serializable objects; capture common fields safely
+      errorData: (() => {
+        try {
+          return error?.response?.data ?? null;
+        } catch (e) {
+          return String(error?.response);
+        }
+      })(),
+      message: error?.message ?? null,
+      stack: error?.stack ?? null,
+    };
+
+    console.error('[apiClient] Request failed (summary):', safeSummary);
 
     if (error.response?.status === 401) {
       // Clear the user (logout)

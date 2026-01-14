@@ -16,14 +16,33 @@ export interface Notification {
 export const notificationsService = {
   // Get all notifications
   getAll: async (): Promise<Notification[]> => {
-    const response = await apiClient.get('/notifications');
-    return response.data;
+    try {
+      const response = await apiClient.get('/notifications');
+      return response.data || [];
+    } catch (err: any) {
+      // If endpoint not found, return empty list instead of throwing
+      if (err?.response?.status === 404) {
+        console.warn('[notificationsService] /notifications returned 404 — returning empty list');
+        return [];
+      }
+      console.error('[notificationsService] getAll failed:', err);
+      throw err;
+    }
   },
 
   // Get unread notifications count
   getUnreadCount: async (): Promise<number> => {
-    const response = await apiClient.get('/notifications/unread');
-    return response.data.count;
+    try {
+      const response = await apiClient.get('/notifications/unread');
+      return response?.data?.count ?? 0;
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        console.warn('[notificationsService] /notifications/unread returned 404 — returning 0');
+        return 0;
+      }
+      console.error('[notificationsService] getUnreadCount failed:', err);
+      throw err;
+    }
   },
 
   // Mark notification as read

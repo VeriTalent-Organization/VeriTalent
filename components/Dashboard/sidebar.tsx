@@ -132,6 +132,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         return [
           { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
           { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+          { icon: FileText, label: "TAPI", href: "/dashboard/tapi" },
           { icon: Briefcase, label: "My Posted Jobs", href: "/dashboard/jobs" },
           { icon: FileText, label: "Post Job / Uploads", href: "/dashboard/postAJob" },
           { icon: ClipboardList, label: "Screened Results & Shortlisting", href: "/dashboard/screening" },

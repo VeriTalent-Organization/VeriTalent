@@ -2,6 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { jobsService } from '@/lib/services/jobsService';
+import { screeningService } from '@/lib/services/screeningService';
 import SchedulingModal from './schedulingModal';
 import CandidateSelectionModal from './candidateSelectionModal';
 import BulkInterviewScheduleCompact from './bulkInterviewScheduleModal';
@@ -39,6 +40,9 @@ export default function DashboardContent() {
   const [sortOption, setSortOption] = useState<'fit-desc' | 'name-asc'>('fit-desc');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'rejected'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [creatingSession, setCreatingSession] = useState(false);
+  const [createdSession, setCreatedSession] = useState<any | null>(null);
+  const [sessionDetail, setSessionDetail] = useState<any | null>(null);
   const [shortlistCandidates, setShortlistCandidates] = useState<ShortlistCandidate[]>([
     { id: '1', name: 'Sam Sulek', fitScore: 60, status: 'shortlisted' },
     { id: '2', name: 'Pariola Ajayi', fitScore: 57, status: 'shortlisted' },
@@ -144,6 +148,47 @@ export default function DashboardContent() {
     }
   };
 
+  const handleCreateSession = async () => {
+    if (!jobData) {
+      setActionMessage('Select a job or fetch job data first.');
+      return;
+    }
+
+    setCreatingSession(true);
+    setActionMessage(null);
+
+    try {
+      const payload = {
+        title: `Screening - ${jobData.id}`,
+        jobId: jobData.id,
+        talentIds: []
+      };
+
+      const res = await screeningService.createSession(payload);
+      setCreatedSession(res);
+      setActionMessage(`Created screening session ${res.id || res.sessionId || 'created'}`);
+    } catch (err) {
+      console.error('Failed to create screening session:', err);
+      setActionMessage('Failed to create screening session');
+    } finally {
+      setCreatingSession(false);
+    }
+  };
+
+  const handleViewSession = async () => {
+    const sessionId = createdSession?.id || createdSession?.sessionId;
+    if (!sessionId) return;
+
+    try {
+      const detail = await screeningService.getSession(sessionId);
+      setSessionDetail(detail);
+      setActionMessage(`Loaded session ${sessionId}`);
+    } catch (err) {
+      console.error('Failed to load session:', err);
+      setActionMessage('Failed to load session details');
+    }
+  };
+
   if (viewMode === "ai-card" && selectedApplicant) {
     return (
       <ApplicantAICardView
@@ -246,6 +291,31 @@ export default function DashboardContent() {
               <div className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-700">No. Interviewed</span>
                 <span className="text-xl sm:text-2xl font-bold text-gray-900">{jobData.noInterviewed}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              onClick={handleCreateSession}
+              disabled={!jobData || creatingSession}
+              className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 transition-colors text-sm font-medium"
+            >
+              {creatingSession ? 'Creating...' : 'Create Screening Session'}
+            </button>
+
+            {createdSession && (
+              <button
+                onClick={handleViewSession}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                View Session
+              </button>
+            )}
+
+            {sessionDetail && (
+              <div className="ml-4 text-sm text-gray-700 bg-gray-50 px-3 py-2 rounded">
+                Session: {sessionDetail.title || sessionDetail.id || 'Session'} {sessionDetail.candidates ? `• ${sessionDetail.candidates.length} candidates` : ''}
               </div>
             )}
           </div>

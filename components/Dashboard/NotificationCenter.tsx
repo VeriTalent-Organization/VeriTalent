@@ -19,14 +19,16 @@ export default function NotificationCenter({ className = '' }: NotificationCente
 
   // Load notifications on mount
   useEffect(() => {
-    loadNotifications();
-    loadUnreadCount();
+    // Call loaders and ensure any rejections are caught to avoid unhandled promise rejections
+    loadNotifications().catch((err) => console.error('loadNotifications failed (initial):', err));
+    loadUnreadCount().catch((err) => console.error('loadUnreadCount failed (initial):', err));
 
     // Set up polling for real-time updates (every 30 seconds)
     const interval = setInterval(() => {
-      loadUnreadCount();
+      // Call and explicitly catch rejections from async functions
+      loadUnreadCount().catch((err) => console.error('loadUnreadCount failed (poll):', err));
       if (isOpen) {
-        loadNotifications();
+        loadNotifications().catch((err) => console.error('loadNotifications failed (poll):', err));
       }
     }, 30000);
 

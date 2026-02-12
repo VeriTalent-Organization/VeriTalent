@@ -29,6 +29,7 @@ def _parse_sse_stream(response: requests.Response) -> str:
         Accumulated content from all chunks
     """
     content_parts = []
+    chunk_count = 0
     
     for line in response.iter_lines(decode_unicode=True):
         if not line:
@@ -40,6 +41,7 @@ def _parse_sse_stream(response: requests.Response) -> str:
             
             # Check for stream end
             if data_str == "[DONE]":
+                logger.info(f"📊 Stream complete: received {chunk_count} chunks, {len(''.join(content_parts))} chars")
                 break
             
             try:
@@ -51,6 +53,10 @@ def _parse_sse_stream(response: requests.Response) -> str:
                     content = delta.get("content")
                     if content:
                         content_parts.append(content)
+                        chunk_count += 1
+                        # Log every 10 chunks to show streaming progress
+                        if chunk_count % 10 == 0:
+                            logger.info(f"📡 Streaming... {chunk_count} chunks received ({len(''.join(content_parts))} chars)")
                         
             except json.JSONDecodeError:
                 # Skip malformed JSON chunks

@@ -77,7 +77,7 @@ async def demo_1_cv_parsing_and_competency():
     - Mobile API Gateway: Designed API gateway for mobile applications
     """
     
-    async with AsyncClient(timeout=60.0) as client:
+    async with AsyncClient(timeout=300.0) as client:  # 5 min timeout for Azure AI reasoning model
         print("\n📄 Parsing CV for Sarah Johnson...")
         print("-" * 70)
         
@@ -227,7 +227,7 @@ async def demo_1b_competency_signals_multi_source():
         ]
     }
     
-    async with AsyncClient(timeout=60.0) as client:
+    async with AsyncClient(timeout=300.0) as client:  # 5 min timeout for Azure AI
         print("🔍 Analyzing competency signals from multiple verified sources...")
         print("-" * 70)
         
@@ -373,7 +373,7 @@ async def demo_2_job_matching():
         "salary_range": "$150,000 - $200,000"
     }
     
-    async with AsyncClient(timeout=60.0) as client:
+    async with AsyncClient(timeout=300.0) as client:
         print("\n👤 Talent: Sarah Johnson (Senior Software Engineer, 7 years exp)")
         print("💼 Job: Lead Backend Engineer at InnovateTech")
         print("-" * 70)
@@ -498,7 +498,7 @@ async def demo_3_tapi_activity_intelligence():
         "submission_date": "2026-01-25"
     }
     
-    async with AsyncClient(timeout=60.0) as client:
+    async with AsyncClient(timeout=300.0) as client:
         print("\n📚 Analyzing Learning Activity Submission...")
         print(f"Learner: {submission_data['learner_name']}")
         print(f"Activity: {submission_data['activity_title']}")
@@ -586,7 +586,7 @@ async def demo_4_cover_letter_generation():
         "description": "Leading-edge tech company building next-generation SaaS products"
     }
     
-    async with AsyncClient(timeout=60.0) as client:
+    async with AsyncClient(timeout=300.0) as client:
         print(f"\n✍️  Generating cover letter for {candidate_info['name']}")
         print(f"Position: {job_info['title']} at {job_info['company']}")
         print("-" * 70)
@@ -640,7 +640,7 @@ async def demo_5_career_insights():
     Looking to transition into Machine Learning / AI
     """
     
-    async with AsyncClient(timeout=60.0) as client:
+    async with AsyncClient(timeout=300.0) as client:
         print("\n🎯 Generating Career Insights for Marcus Thompson")
         print("Current: Junior Data Analyst → Goal: ML/AI Career")
         print("-" * 70)
@@ -755,7 +755,7 @@ async def demo_6_batch_screening():
         "education_requirement": "Bachelor's degree in Computer Science or related field"
     }
     
-    async with AsyncClient(timeout=120.0) as client:
+    async with AsyncClient(timeout=300.0) as client:
         print(f"\n📋 Screening {len(candidates)} candidates")
         print("Position: Lead Backend Engineer")
         print("-" * 70)

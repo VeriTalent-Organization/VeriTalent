@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # VeriTalent AI Microservice
+  veritalent-ai:
+    build:
+      context: ./ai
+      dockerfile: Dockerfile
+    container_name: veritalent-ai
+    image: veritalent-ai:latest
+    
+    ports:
+      - "8080:8080"
+    
+    environment:
+      # Azure AI Configuration
+      - AZURE_AI_ENDPOINT=${AZURE_AI_ENDPOINT}
+      - AZURE_AI_API_KEY=${AZURE_AI_API_KEY}
+      - AZURE_AI_MODEL=${AZURE_AI_MODEL:-grok-4-fast-reasoning}
+      - AZURE_EMBEDDING_MODEL=${AZURE_EMBEDDING_MODEL:-text-embedding-3-small}
+      
+      # Cosmos DB Configuration
+      - COSMOS_CONNECTION_STRING=${COSMOS_CONNECTION_STRING}
+      - COSMOS_DATABASE_NAME=${COSMOS_DATABASE_NAME:-veritalent_ai}
+      - COSMOS_VECTORS_COLLECTION=${COSMOS_VECTORS_COLLECTION:-embeddings}
+      
+      # API Configuration
+      - AI_API_HOST=0.0.0.0
+      - AI_API_PORT=8080
+      - AI_API_DEBUG=${AI_API_DEBUG:-false}
+      - AI_API_KEY=${AI_API_KEY:-dev-ai-secret-key-2026}
+      
+      # Backend Integration
+      - BACKEND_API_URL=${BACKEND_API_URL:-https://veritalent-server.onrender.com/v1}
+      - AI_SERVICE_URL=${AI_SERVICE_URL:-http://veritalent-ai:8080}
+      
+      # Security
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+      # Limits
+      - MAX_CV_SIZE_MB=${MAX_CV_SIZE_MB:-10}
+      - MAX_TOKENS_PER_REQUEST=${MAX_TOKENS_PER_REQUEST:-4000}
+    
+    volumes:
+      # Persist vector database
+      - ai-data:/app/data
+      # Persist logs
+      - ai-logs:/app/logs
+    
+    restart: unless-stopped
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    networks:
+      - veritalent-network
+
+networks:
+  veritalent-network:
+    driver: bridge
+
+volumes:
+  ai-data:
+    name: veritalent-ai-data
+  ai-logs:
+    name: veritalent-ai-logs

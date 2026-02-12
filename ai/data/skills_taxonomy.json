@@ -1,0 +1,132 @@
+{
+  "version": "1.0",
+  "categories": [
+    {
+      "id": "programming",
+      "name": "Programming Languages",
+      "skills": [
+        {"id": "python", "name": "Python", "aliases": ["python3", "py"]},
+        {"id": "javascript", "name": "JavaScript", "aliases": ["js", "ecmascript"]},
+        {"id": "typescript", "name": "TypeScript", "aliases": ["ts"]},
+        {"id": "java", "name": "Java", "aliases": []},
+        {"id": "csharp", "name": "C#", "aliases": ["c-sharp", "dotnet"]},
+        {"id": "cpp", "name": "C++", "aliases": ["cplusplus"]},
+        {"id": "go", "name": "Go", "aliases": ["golang"]},
+        {"id": "rust", "name": "Rust", "aliases": []},
+        {"id": "ruby", "name": "Ruby", "aliases": ["rb"]},
+        {"id": "php", "name": "PHP", "aliases": []},
+        {"id": "swift", "name": "Swift", "aliases": []},
+        {"id": "kotlin", "name": "Kotlin", "aliases": []}
+      ]
+    },
+    {
+      "id": "web_frontend",
+      "name": "Web Frontend",
+      "skills": [
+        {"id": "html", "name": "HTML", "aliases": ["html5"]},
+        {"id": "css", "name": "CSS", "aliases": ["css3"]},
+        {"id": "react", "name": "React", "aliases": ["reactjs", "react.js"]},
+        {"id": "vue", "name": "Vue.js", "aliases": ["vue", "vuejs"]},
+        {"id": "angular", "name": "Angular", "aliases": ["angularjs"]},
+        {"id": "nextjs", "name": "Next.js", "aliases": ["next"]},
+        {"id": "tailwind", "name": "Tailwind CSS", "aliases": ["tailwindcss"]},
+        {"id": "sass", "name": "Sass/SCSS", "aliases": ["scss"]}
+      ]
+    },
+    {
+      "id": "web_backend",
+      "name": "Web Backend",
+      "skills": [
+        {"id": "nodejs", "name": "Node.js", "aliases": ["node"]},
+        {"id": "express", "name": "Express.js", "aliases": ["express"]},
+        {"id": "fastapi", "name": "FastAPI", "aliases": []},
+        {"id": "django", "name": "Django", "aliases": []},
+        {"id": "flask", "name": "Flask", "aliases": []},
+        {"id": "spring", "name": "Spring Boot", "aliases": ["spring-boot"]},
+        {"id": "rails", "name": "Ruby on Rails", "aliases": ["rails"]},
+        {"id": "nestjs", "name": "NestJS", "aliases": ["nest"]}
+      ]
+    },
+    {
+      "id": "data",
+      "name": "Data & Analytics",
+      "skills": [
+        {"id": "sql", "name": "SQL", "aliases": []},
+        {"id": "postgresql", "name": "PostgreSQL", "aliases": ["postgres"]},
+        {"id": "mongodb", "name": "MongoDB", "aliases": ["mongo"]},
+        {"id": "mysql", "name": "MySQL", "aliases": []},
+        {"id": "redis", "name": "Redis", "aliases": []},
+        {"id": "data_analysis", "name": "Data Analysis", "aliases": []},
+        {"id": "pandas", "name": "Pandas", "aliases": []},
+        {"id": "numpy", "name": "NumPy", "aliases": []},
+        {"id": "excel", "name": "Excel", "aliases": ["microsoft excel"]},
+        {"id": "tableau", "name": "Tableau", "aliases": []},
+        {"id": "power_bi", "name": "Power BI", "aliases": ["powerbi"]}
+      ]
+    },
+    {
+      "id": "ai_ml",
+      "name": "AI & Machine Learning",
+      "skills": [
+        {"id": "machine_learning", "name": "Machine Learning", "aliases": ["ml"]},
+        {"id": "deep_learning", "name": "Deep Learning", "aliases": ["dl"]},
+        {"id": "tensorflow", "name": "TensorFlow", "aliases": ["tf"]},
+        {"id": "pytorch", "name": "PyTorch", "aliases": []},
+        {"id": "scikit_learn", "name": "Scikit-learn", "aliases": ["sklearn"]},
+        {"id": "nlp", "name": "Natural Language Processing", "aliases": ["nlp"]},
+        {"id": "computer_vision", "name": "Computer Vision", "aliases": ["cv"]},
+        {"id": "llm", "name": "Large Language Models", "aliases": ["llm", "gpt"]}
+      ]
+    },
+    {
+      "id": "devops",
+      "name": "DevOps & Cloud",
+      "skills": [
+        {"id": "docker", "name": "Docker", "aliases": []},
+        {"id": "kubernetes", "name": "Kubernetes", "aliases": ["k8s"]},
+        {"id": "aws", "name": "AWS", "aliases": ["amazon web services"]},
+        {"id": "azure", "name": "Azure", "aliases": ["microsoft azure"]},
+        {"id": "gcp", "name": "Google Cloud", "aliases": ["gcp"]},
+        {"id": "ci_cd", "name": "CI/CD", "aliases": ["cicd"]},
+        {"id": "terraform", "name": "Terraform", "aliases": []},
+        {"id": "linux", "name": "Linux", "aliases": []},
+        {"id": "git", "name": "Git", "aliases": ["github", "gitlab"]}
+      ]
+    },
+    {
+      "id": "soft_skills",
+      "name": "Soft Skills",
+      "skills": [
+        {"id": "communication", "name": "Communication", "aliases": []},
+        {"id": "leadership", "name": "Leadership", "aliases": []},
+        {"id": "teamwork", "name": "Teamwork", "aliases": ["collaboration"]},
+        {"id": "problem_solving", "name": "Problem Solving", "aliases": []},
+        {"id": "critical_thinking", "name": "Critical Thinking", "aliases": []},
+        {"id": "time_management", "name": "Time Management", "aliases": []},
+        {"id": "adaptability", "name": "Adaptability", "aliases": []},
+        {"id": "creativity", "name": "Creativity", "aliases": []}
+      ]
+    },
+    {
+      "id": "marketing",
+      "name": "Marketing & Business",
+      "skills": [
+        {"id": "digital_marketing", "name": "Digital Marketing", "aliases": []},
+        {"id": "seo", "name": "SEO", "aliases": ["search engine optimization"]},
+        {"id": "content_strategy", "name": "Content Strategy", "aliases": []},
+        {"id": "analytics", "name": "Analytics", "aliases": ["google analytics"]},
+        {"id": "social_media", "name": "Social Media Marketing", "aliases": ["smm"]},
+        {"id": "copywriting", "name": "Copywriting", "aliases": []},
+        {"id": "product_management", "name": "Product Management", "aliases": []},
+        {"id": "project_management", "name": "Project Management", "aliases": ["pm"]},
+        {"id": "agile", "name": "Agile/Scrum", "aliases": ["scrum"]}
+      ]
+    }
+  ],
+  "levels": [
+    {"id": "beginner", "name": "Beginner", "score_range": [0, 39]},
+    {"id": "intermediate", "name": "Intermediate", "score_range": [40, 69]},
+    {"id": "advanced", "name": "Advanced", "score_range": [70, 89]},
+    {"id": "expert", "name": "Expert", "score_range": [90, 100]}
+  ]
+}

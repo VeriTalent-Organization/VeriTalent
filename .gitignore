@@ -1,41 +1,74 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+.env.local
+.env.*.local
 
-# testing
-/coverage
+# UV
+uv.lock
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-*.pem
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
 
-# env files (can opt-in for committing if needed)
-.env*
+# Jupyter Notebook
+.ipynb_checkpoints
 
-# vercel
-.vercel
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Pyre type checker
+.pyre/
+
+# ChromaDB
+ai/data/chroma/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

@@ -305,7 +305,8 @@ class CompetencySignalGenerator:
                 tapi_confidence = sum(e.confidence for e in tapi_evidence) / len(tapi_evidence)
                 tapi_strength = min(1.0, len(tapi_evidence) / 3)  # 3+ activities = full strength
                 breakdown.tapi_intelligence = 20.0 * tapi_confidence * tapi_strength
-            \n            # Ref: 20% max
+            
+            # Ref: 20% max
             if ref_evidence:
                 ref_confidence = sum(e.confidence for e in ref_evidence) / len(ref_evidence)
                 ref_strength = min(1.0, len(ref_evidence) / 2)  # 2+ references = full strength

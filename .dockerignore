@@ -1,0 +1,83 @@
+# =============================================================================
+# Docker Ignore - VeriTalent
+# =============================================================================
+
+# Git
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+ai/.venv/
+ai/venv/
+
+# Testing
+.pytest_cache/
+ai/.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+ai/tests/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation (root level)
+*.md
+docs/
+ai/docs/
+
+# Data and logs
+ai/data/chroma/
+ai/logs/
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+ai/.env
+ai/.env.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Node / Frontend (if any)
+node_modules/
+
+# Docker
+docker-compose.yml
+ai/Dockerfile
+ai/.dockerignore

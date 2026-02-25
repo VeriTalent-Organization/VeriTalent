@@ -1,30 +1,34 @@
 """
 Embedding Service
 
-Service for generating and managing text embeddings using Azure AI.
+Service for generating and managing text embeddings using Azure OpenAI.
 """
 from typing import Any
 
-from azure.ai.inference import EmbeddingsClient
-from azure.core.credentials import AzureKeyCredential
+from openai import AzureOpenAI
 
 from src.config import settings
-from src.services.cosmos_service import CosmosVectorService
+from src.services.mongo_service import MongoDBVectorService
 
 
 class EmbeddingService:
-    """Service for text embeddings using Azure AI and Cosmos DB."""
+    """Service for text embeddings using Azure OpenAI and MongoDB."""
 
     def __init__(self):
-        # Azure AI Embeddings Client
-        self.client = EmbeddingsClient(
-            endpoint=settings.azure_ai_endpoint.replace("/chat/completions", "/embeddings"),
-            credential=AzureKeyCredential(settings.azure_ai_api_key),
+        # Azure OpenAI Client for embeddings
+        # Extract base URL from full endpoint
+        base_url = settings.azure_openai_embedding_endpoint.split("/openai/")[0] if "/openai/" in settings.azure_openai_embedding_endpoint else settings.azure_openai_embedding_endpoint
+        
+        self.client = AzureOpenAI(
+            api_key=settings.azure_openai_embedding_key,
+            api_version="2023-05-15",
+            azure_endpoint=base_url,
         )
         self.model = settings.azure_embedding_model
+        self.deployment_name = "text-embedding-3-small"  # Azure OpenAI deployment name
         
-        # Cosmos DB Vector Storage
-        self.vector_db = CosmosVectorService()
+        # MongoDB Vector Storage
+        self.vector_db = MongoDBVectorService()
 
     async def generate_embedding(self, text: str) -> list[float]:
         """
@@ -37,9 +41,9 @@ class EmbeddingService:
             List of floats representing the embedding
         """
         try:
-            response = self.client.embed(
-                input=[text],
-                model=self.model,
+            response = self.client.embeddings.create(
+                input=text,
+                model=self.deployment_name,
             )
             
             return response.data[0].embedding
@@ -62,9 +66,9 @@ class EmbeddingService:
             List of embeddings
         """
         try:
-            response = self.client.embed(
+            response = self.client.embeddings.create(
                 input=texts,
-                model=self.model,
+                model=self.deployment_name,
             )
             
             return [item.embedding for item in response.data]
@@ -81,7 +85,7 @@ class EmbeddingService:
         text: str = "",
     ) -> bool:
         """
-        Store an embedding in Cosmos DB.
+        Store an embedding in MongoDB.
         
         Args:
             doc_id: Unique identifier

@@ -205,7 +205,7 @@ ai/
 │   ├── services/                  # External service integrations
 │   │   ├── llm_service.py         # Azure AI LLM integration ⭐
 │   │   ├── embedding_service.py   # Vector embeddings
-│   │   └── cosmos_service.py      # Cosmos DB (optional)
+│   │   └── mongo_service.py       # MongoDB Vector DB
 │   └── utils/                     # Utilities
 │       └── logging_config.py      # Logging setup
 ├── tests/                         # Test suite (pytest)

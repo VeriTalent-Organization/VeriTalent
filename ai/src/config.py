@@ -15,12 +15,16 @@ class Settings(BaseSettings):
     azure_ai_endpoint: str = ""
     azure_ai_api_key: str = ""
     azure_ai_model: str = "grok-4-fast-reasoning"
+    
+    # Azure OpenAI Embeddings (Separate endpoint)
+    azure_openai_embedding_endpoint: str = ""
+    azure_openai_embedding_key: str = ""
     azure_embedding_model: str = "text-embedding-3-small"
 
-    # Cosmos DB (MongoDB vCore - Vector Storage)
-    cosmos_connection_string: str = ""
-    cosmos_database_name: str = "veritalent_ai"
-    cosmos_vectors_collection: str = "embeddings"
+    # MongoDB Atlas (Vector Storage)
+    mongodb_connection_string: str = ""
+    mongodb_database_name: str = "veritalent_ai"
+    mongodb_vectors_collection: str = "embeddings"
 
     # API Configuration
     ai_api_host: str = "0.0.0.0"

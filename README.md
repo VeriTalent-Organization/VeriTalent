@@ -27,7 +27,7 @@ VeriTalent AI is a microservice that provides intelligent talent assessment capa
 
 - **Required for Both**
   - Azure AI API key (Grok model via Azure OpenAI-compatible endpoint)
-  - Azure Cosmos DB connection string (MongoDB vCore)
+  - MongoDB Atlas connection string (Vector Database)
 
 ### Option 1: Docker Deployment (Recommended)
 
@@ -162,10 +162,10 @@ AZURE_AI_API_KEY=your-azure-api-key-here
 AZURE_AI_MODEL=grok-4-fast-reasoning
 AZURE_EMBEDDING_MODEL=text-embedding-3-small
 
-# Cosmos DB MongoDB vCore (REQUIRED)
-COSMOS_CONNECTION_STRING=mongodb://your-cosmos-connection-string
-COSMOS_DATABASE_NAME=veritalent_ai
-COSMOS_VECTORS_COLLECTION=embeddings
+# MongoDB Atlas (Vector Database - REQUIRED)
+MONGODB_CONNECTION_STRING=mongodb+srv://username:password@cluster.mongodb.net/?appName=Cluster0
+MONGODB_DATABASE_NAME=veritalent_ai
+MONGODB_VECTORS_COLLECTION=embeddings
 
 # API Configuration
 AI_API_HOST=0.0.0.0

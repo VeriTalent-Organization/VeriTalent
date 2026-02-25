@@ -4,7 +4,7 @@ services:
   # VeriTalent AI Microservice
   veritalent-ai:
     build:
-      context: ./ai
+      context: .
       dockerfile: Dockerfile
     container_name: veritalent-ai
     image: veritalent-ai:latest
